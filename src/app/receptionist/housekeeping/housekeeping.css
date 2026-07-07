@@ -1,0 +1,281 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.housekeeping-container {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.page-header-wrapper {
+  background: #fff;
+  padding: 22px 28px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.page-subtitle {
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section-container {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+
+/* =========================================================
+   EMPLOYEE CARD
+========================================================= */
+
+.employee-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  transition: .3s;
+  height: 100%;
+}
+
+.employee-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+}
+
+.emp-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.custom-table {
+  margin-bottom: 0;
+}
+
+.custom-table thead {
+  background: #0d6efd;
+  color: white;
+}
+
+.custom-table thead th {
+  border: none;
+  font-weight: 600;
+  padding: 15px;
+}
+
+.custom-table tbody td {
+  padding: 15px;
+  vertical-align: middle;
+}
+
+.custom-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.task-id-badge {
+  background: #eef2ff;
+  color: #0d6efd;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   PROGRESS BAR
+========================================================= */
+
+.progress {
+  height: 18px;
+  border-radius: 20px;
+  background: #e5e7eb;
+}
+
+.progress-bar {
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn-primary-custom {
+  background: linear-gradient(135deg, #0f4c81, #366ef1);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  transition: .3s;
+}
+
+.btn-primary-custom:hover {
+  background: #0b5ed7;
+}
+
+.btn-confirm {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.btn-cancel {
+  background: #f3f4f6;
+  border: none;
+  color: #374151;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.modal-card {
+  width: 500px;
+  max-width: 95%;
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding-top: 18px;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-select,
+.form-control {
+  border-radius: 8px;
+  height: 45px;
+  border: 1px solid #d1d5db;
+}
+
+.form-select:focus,
+.form-control:focus {
+  box-shadow: none;
+  border-color: #0d6efd;
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.badge {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 20px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width:768px) {
+
+  .page-header-wrapper {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .modal-card {
+    width: 95%;
+  }
+
+  .custom-table {
+    min-width: 700px;
+  }
+}

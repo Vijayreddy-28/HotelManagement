@@ -1,0 +1,250 @@
+/* Global Reset Modifications for Layout Stability */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  margin: 0;
+  background-color: #f8fafc;
+  color: #334155;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Master Layout Framework */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Top App Header Bar */
+.app-header {
+  height: 64px;
+  background-color: #0f4c81;
+  /* Dark Slate Blue */
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: #ffffff;
+}
+
+.brand-badge {
+  font-size: 0.7rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-action-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.icon-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.user-profile-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.user-profile-dropdown .avatar {
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Viewport Shell Splitter */
+.app-viewport {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left Sidebar Panel */
+.app-sidebar {
+  width: 280px;
+  background-color: #ffffff;
+  /* Crisp white sidebar */
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-nav-wrapper {
+  padding-top: 24px;
+}
+
+.menu-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.08em;
+  padding: 0 24px 12px;
+}
+
+.sidebar-nav .nav-list {
+  list-style: none;
+  padding: 0 12px;
+  margin: 0;
+}
+
+.sidebar-nav .nav-item {
+  margin-bottom: 4px;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: #334155;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.925rem;
+  font-weight: 500;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.sidebar-nav .nav-link:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.sidebar-nav .nav-icon {
+  font-size: 1.15rem;
+  color: #64748b;
+  transition: color 0.15s;
+}
+
+.sidebar-nav .nav-link:hover .nav-icon {
+  color: #0f172a;
+}
+
+/* Activated State via Angular's routerLinkActive */
+.sidebar-nav .nav-link.is-active {
+  background-color: #eff6ff;
+  /* Soft enterprise blue accent tint */
+  color: #2563eb;
+  /* Vivid Blue text */
+  font-weight: 600;
+}
+
+.sidebar-nav .nav-link.is-active .nav-icon {
+  color: #2563eb;
+}
+
+/* Sidebar Utilities Footer */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+  background-color: #fef2f2;
+  /* Soft red alert tint */
+  border-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Content Area Component Window */
+.app-content-workspace {
+  flex: 1;
+  background-color: #f8fafc;
+  /* Subtle workspace light grey */
+  overflow-y: auto;
+}
+
+.workspace-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px;
+}

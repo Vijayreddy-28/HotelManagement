@@ -1,0 +1,259 @@
+<!-- Loading State -->
+<div class="food-workspace" *ngIf="!isLoading(); else loadingTpl">
+
+  <!-- Search & Sort Bar (mirrors room booking search-card-wrapper) -->
+  <div class="search-card-wrapper">
+    <div class="form-grid">
+      <!-- Search -->
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-search"></i> Search Dishes</label>
+        <input type="text" class="form-control-custom" placeholder="Search by name or category…" [value]="searchQuery()"
+          (input)="onSearch($any($event.target).value)" id="food-search" />
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-grid"></i> Category</label>
+        <select class="form-control-custom" [ngModel]="activeCategory()" (ngModelChange)="setCategory($event)">
+          <option *ngFor="let cat of categories()" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <!-- Sort -->
+      <div class="form-group">
+        <label class="form-label"><i class="bi bi-arrow-down-up"></i> Sort by Price</label>
+        <select id="price-sort" class="form-control-custom" [ngModel]="priceSort()"
+          (ngModelChange)="setPriceSort($event)">
+          <option value="default">Default</option>
+          <option value="asc">Low to High</option>
+          <option value="desc">High to Low</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="filteredItems().length === 0" class="d-flex justify-content-center align-items-center py-5">
+    <div class="empty-room-card text-center">
+      <i class="bi bi-cup-hot display-1 mb-3" style="color: rgb(197, 59, 59);"></i>
+      <h3 class="fw-bold mb-2">No Dishes Found</h3>
+      <p class="text-muted mb-4">
+        Sorry, no dishes match your search or filter. Try a different category or search term.
+      </p>
+    </div>
+  </div>
+
+  <!-- Menu Grid (mirrors rooms-grid) -->
+  <div class="rooms-grid" *ngIf="filteredItems().length > 0">
+    <div class="room-premium-card" *ngFor="let item of filteredItems()">
+
+      <!-- Card Banner (mirrors card-media-banner) -->
+      <div class="card-media-banner" [ngClass]="getBannerClass(item.category)">
+        <span class="room-badge-indicator available">
+          <i [class]="getCatIcon(item.category)"></i> {{ item.category }}
+        </span>
+        <div class="price-overlay">
+          <span class="currency">₹</span>
+          <span class="amount">{{ item.price }}</span>
+          <span class="period">/ item</span>
+        </div>
+      </div>
+
+      <!-- Card Body (mirrors room-card-body) -->
+      <div class="room-card-body">
+        <div class="room-title-row">
+          <h3 class="room-identifier">{{ item.itemName }}</h3>
+          <span class="room-type-pill">{{ item.category }}</span>
+        </div>
+
+        <hr class="divider-subtle" />
+
+        <p class="dish-desc">{{ item.description }}</p>
+
+        <!-- Add to Cart Controls (mirrors card-action-footer) -->
+        <div class="card-action-footer">
+          <div class="qty-controls" *ngIf="getQuantityInCart(item.itemId) > 0; else addBtn">
+            <button class="qty-btn minus" (click)="removeFromCart(item.itemId)" aria-label="Decrease quantity">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span class="qty-display">{{ getQuantityInCart(item.itemId) }}</span>
+            <button class="qty-btn plus" (click)="addToCart(item)" aria-label="Increase quantity">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          <ng-template #addBtn>
+            <button class="btn-enterprise-success" (click)="addToCart(item)" [disabled]="!item.isAvailable"
+              type="button">
+              <i class="bi bi-cart-plus"></i>
+              <span>{{ item.isAvailable ? 'Add to Order' : 'Unavailable' }}</span>
+            </button>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Cart Button (mirrors floating-cart) -->
+  <div class="floating-cart" *ngIf="cartCount() > 0">
+    <button class="cart-btn" (click)="toggleCart()" id="view-cart-btn">
+      <i class="bi bi-bag-fill"></i>
+      <span>View Order</span>
+      <span class="cart-count">{{ cartCount() }}</span>
+      <span class="cart-total-badge">₹{{ cartTotal() }}</span>
+    </button>
+  </div>
+</div>
+
+<!-- Loading Template -->
+<ng-template #loadingTpl>
+  <div class="loading-state">
+    <div class="spinner-ring"></div>
+    <p>Loading menu…</p>
+  </div>
+</ng-template>
+
+<!-- Cart Drawer Overlay -->
+<div class="cart-overlay" [class.open]="showCart()" (click)="toggleCart()"></div>
+
+<!-- Cart Side Drawer -->
+<div class="cart-drawer" [class.open]="showCart()">
+  <div class="drawer-header">
+    <h3><i class="bi bi-bag-check-fill"></i> Your Order</h3>
+    <button class="drawer-close" (click)="toggleCart()" aria-label="Close cart">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+    <!-- Empty Cart -->
+    <div class="cart-empty" *ngIf="cartItems().length === 0">
+      <i class="bi bi-bag-x"></i>
+      <p>Your order is empty</p>
+    </div>
+
+    <!-- Cart Items List -->
+    <div class="cart-list" *ngIf="cartItems().length > 0">
+      <div class="cart-item" *ngFor="let item of cartItems()">
+        <div class="cart-item-info">
+          <div class="cart-item-text">
+            <span class="cart-item-name">{{ item.itemName }}</span>
+            <span class="cart-item-price">₹{{ item.price }} × {{ item.quantity }}</span>
+          </div>
+        </div>
+        <div class="cart-item-controls">
+          <div class="qty-controls small">
+            <button class="qty-btn minus" (click)="removeFromCart(item.itemId)">
+              <i class="bi bi-dash"></i>
+            </button>
+            <span class="qty-display">{{ item.quantity }}</span>
+            <button class="qty-btn plus" (click)="addToCart(getMenuItem(item.itemId))">
+              <i class="bi bi-plus"></i>
+            </button>
+          </div>
+          <span class="cart-item-subtotal">₹{{ item.price * item.quantity }}</span>
+          <button class="btn-remove-item" (click)="removeItemCompletely(item.itemId)" aria-label="Remove item">
+            <i class="bi bi-trash3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Special Instructions -->
+    <div class="special-instructions" *ngIf="cartItems().length > 0">
+      <label class="form-label" style="margin-bottom: 6px;">
+        <i class="bi bi-pencil-square"></i> Special Instructions
+      </label>
+      <textarea class="form-control-custom instr-input" rows="3"
+        placeholder="Any allergies, dietary preferences, or special requests…"
+        [(ngModel)]="specialInstructions"></textarea>
+    </div>
+  </div>
+
+  <!-- Drawer Footer -->
+  <div class="drawer-footer" *ngIf="cartItems().length > 0">
+    <div class="order-summary">
+      <div class="summary-row">
+        <span>Subtotal ({{ cartCount() }} items)</span>
+        <span>₹{{ cartTotal() }}</span>
+      </div>
+      <div class="summary-row taxes">
+        <span>Taxes & Charges (5%)</span>
+        <span>₹{{ (cartTotal() * 0.05).toFixed(0) }}</span>
+      </div>
+      <hr class="summary-divider" />
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>₹{{ (cartTotal() * 1.05).toFixed(0) }}</span>
+      </div>
+    </div>
+    <button class="btn-enterprise-primary" (click)="placeOrder()" id="place-order-btn"
+      style="background-color: #0f4c81;">
+      <i class="bi bi-check-circle-fill"></i>
+      <span>Place Order</span>
+    </button>
+  </div>
+</div>
+
+<!-- Room Selection Modal -->
+<div class="modal-overlay" *ngIf="showRoomModal()" (click)="closeRoomModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="bi bi-door-open-fill"></i>
+        Select Room Delivery
+      </h3>
+      <button class="btn-close-modal" (click)="closeRoomModal()" aria-label="Close modal">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-prompt">Please select the room you are currently staying in to deliver your order:</p>
+
+      <div class="loading-state-modal" *ngIf="loadingBookings()">
+        <div class="spinner-ring small"></div>
+        <p>Retrieving active room bookings...</p>
+      </div>
+
+      <div class="room-selector-group" *ngIf="!loadingBookings()">
+        <div class="form-group">
+          <label for="room-select" class="form-label"><i class="bi bi-door-closed"></i> Available Booked Rooms</label>
+
+          <div *ngIf="bookingRooms().length > 0">
+            <select id="room-select" class="form-control-custom" [(ngModel)]="selectedBookingOption">
+              <option value="" disabled selected>Select a Room</option>
+              <option *ngFor="let opt of bookingRooms()"
+                [value]="opt.bookingId + '-' + opt.roomId + '-' + opt.roomNumber">
+                Room {{ opt.roomNumber }} (Booking #{{ opt.bookingId }})
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- No bookings fallback -->
+        <div class="no-bookings-warning" *ngIf="bookingRooms().length === 0">
+          <i class="bi bi-exclamation-triangle"></i>
+          <h4>No Confirmed Bookings Found</h4>
+          <p>We couldn't detect any active room bookings for your account. Please enter your Room Number manually to
+            proceed with the food order.</p>
+
+          <div class="manual-room-input">
+            <input type="text" class="form-control-custom" placeholder="e.g. 101, 205" #manualRoomNumber />
+            <button type="button" class="btn-enterprise-primary" style="background-color: #0f4c81; margin-top: 8px;"
+              (click)="selectedBookingOption = '999-999-' + (manualRoomNumber.value || '101')">
+              Apply Room {{ manualRoomNumber.value ? manualRoomNumber.value : '' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer" *ngIf="bookingRooms().length > 0 || selectedBookingOption">
+      <button type="button" class="btn-cancel-modal" (click)="closeRoomModal()">Cancel</button>
+      <button type="button" class="btn-enterprise-primary" (click)="confirmRoomSelection()"
+        [disabled]="!selectedBookingOption" style="background-color: #0f4c81; flex:1;">
+        Proceed to Food Cart
+      </button>
+    </div>
+  </div>
+</div>

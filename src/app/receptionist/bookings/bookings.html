@@ -1,0 +1,411 @@
+<div class="bookings-container container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+    <div>
+      <h2 class="page-title text-dark fw-bold mb-1">
+        <i class="bi bi-journal-bookmark-fill text-primary me-2"></i>Front Desk Operations
+      </h2>
+      <p class="page-subtitle text-muted mb-0">Manage guest check-ins, check-outs, stay extensions, and guest directory.</p>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="nav nav-pills gap-2" role="tablist">
+        <button class="nav-link px-4 py-2 d-flex align-items-center gap-2 fw-semibold" 
+                [class.active]="activeTab() === 'checkin'" 
+                (click)="setTab('checkin')">
+          <i class="bi bi-box-arrow-in-right"></i>
+          Arrivals & Check-In
+        </button>
+        <button class="nav-link px-4 py-2 d-flex align-items-center gap-2 fw-semibold" 
+                [class.active]="activeTab() === 'checkout'" 
+                (click)="setTab('checkout')">
+          <i class="bi bi-box-arrow-right"></i>
+          Departures & Check-Out
+        </button>
+        <button class="nav-link px-4 py-2 d-flex align-items-center gap-2 fw-semibold" 
+                [class.active]="activeTab() === 'guest'" 
+                (click)="setTab('guest')">
+          <i class="bi bi-people-fill"></i>
+          In-House Guests Directory
+        </button>
+      </div>
+
+      <!-- Search Toolbar for Check-ins / Check-outs -->
+      <div *ngIf="activeTab() !== 'guest'" class="search-panel" style="min-width: 320px;">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control bg-light border-start-0 ps-0" 
+                 placeholder="Search by ID or Customer Name..."
+                 [(ngModel)]="searchText">
+        </div>
+      </div>
+
+      <!-- Search Toolbar for Guests -->
+      <div *ngIf="activeTab() === 'guest'" class="search-panel" style="min-width: 320px;">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control bg-light border-start-0 ps-0" 
+                 placeholder="Search guests (Name, Room, Aadhaar, Phone, Email)..."
+                 [(ngModel)]="guestSearchText">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 1: Today's Check-ins -->
+  <div *ngIf="activeTab() === 'checkin'">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Today's Scheduled Arrivals</h5>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-semibold">
+          {{ filteredCheckIns().length }} Bookings Found
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" *ngIf="filteredCheckIns().length > 0; else emptyArrivals">
+          <table class="table align-middle custom-table mb-0">
+            <thead class="table-light text-uppercase fs-7 text-secondary">
+              <tr>
+                <th class="ps-4">Booking ID</th>
+                <th>Guest Profile</th>
+                <th>Check-in Date</th>
+                <th>Room Assignment</th>
+                <th>Total Charges</th>
+                <th>Booking Status</th>
+                <th class="text-center pe-4" style="width: 280px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let booking of filteredCheckIns()">
+                <td class="ps-4"><span class="fw-bold text-primary">#{{ booking.bookingId }}</span></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                      {{ booking.customerName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <h6 class="fw-semibold text-dark mb-0">{{ booking.customerName }}</h6>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-secondary small"><i class="bi bi-calendar-check text-primary me-2"></i>{{ booking.checkInDate }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-medium">
+                    <i class="bi bi-door-open text-primary me-1"></i>
+                    Room {{ bookingRoomsMap.get(booking.bookingId) || 'Assigned' }}
+                  </span>
+                </td>
+                <td><span class="fw-bold text-dark">₹{{ booking.totalAmount | number }}</span></td>
+                <td><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">{{ booking.status }}</span></td>
+                <td class="text-center pe-4">
+                  <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-primary btn-sm px-3" (click)="checkIn(booking.bookingId)">
+                      <i class="bi bi-box-arrow-in-right me-1"></i> Check In
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-2" (click)="cancelBooking(booking.bookingId)">
+                      <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button class="btn btn-light border btn-sm px-2 text-dark" (click)="viewDetails(booking)">
+                      Details
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #emptyArrivals>
+          <div class="text-center py-5">
+            <i class="bi bi-calendar-x text-muted display-4"></i>
+            <h5 class="mt-3 text-secondary">No Arrivals Scheduled</h5>
+            <p class="text-muted small mb-0">All arrivals for today have been checked in or cancelled.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Today's Check-outs -->
+  <div *ngIf="activeTab() === 'checkout'">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Today's Scheduled Departures</h5>
+        <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2 fw-semibold">
+          {{ filteredCheckOuts().length }} Bookings Found
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" *ngIf="filteredCheckOuts().length > 0; else emptyDepartures">
+          <table class="table align-middle custom-table mb-0">
+            <thead class="table-light text-uppercase fs-7 text-secondary">
+              <tr>
+                <th class="ps-4">Booking ID</th>
+                <th>Guest Profile</th>
+                <th>Check-out Date</th>
+                <th>Room Assigned</th>
+                <th>Total Charges</th>
+                <th>Status</th>
+                <th class="text-center pe-4" style="width: 320px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let booking of filteredCheckOuts()">
+                <td class="ps-4"><span class="fw-bold text-primary">#{{ booking.bookingId }}</span></td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                      {{ booking.customerName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <h6 class="fw-semibold text-dark mb-0">{{ booking.customerName }}</h6>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-secondary small"><i class="bi bi-calendar-x text-danger me-2"></i>{{ booking.checkOutDate }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-medium">
+                    <i class="bi bi-door-open text-danger me-1"></i>
+                    Room {{ bookingRoomsMap.get(booking.bookingId) || 'Assigned' }}
+                  </span>
+                </td>
+                <td><span class="fw-bold text-dark">₹{{ booking.totalAmount | number }}</span></td>
+                <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1">{{ booking.status }}</span></td>
+                <td class="text-center pe-4">
+                  <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-danger btn-sm px-3" (click)="checkOut(booking.bookingId)">
+                      <i class="bi bi-box-arrow-right me-1"></i> Check Out
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm px-2.5" (click)="openExtendModal(booking.bookingId)">
+                      <i class="bi bi-calendar-plus me-1"></i> Extend
+                    </button>
+                    <button class="btn btn-light border btn-sm px-2 text-dark" (click)="viewDetails(booking)">
+                      Details
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #emptyDepartures>
+          <div class="text-center py-5">
+            <i class="bi bi-door-closed text-muted display-4"></i>
+            <h5 class="mt-3 text-secondary">No Departures Scheduled</h5>
+            <p class="text-muted small mb-0">No checked-in guests are scheduled to depart today.</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Current Guests Directory -->
+  <div *ngIf="activeTab() === 'guest'">
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Guests Directory</h5>
+        <span class="badge bg-info-subtle text-info rounded-pill px-3 py-2 fw-semibold">
+          {{ enrichedGuests().length }} Active In-House Guests
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" *ngIf="paginatedGuests().length > 0; else emptyGuests">
+          <table class="table align-middle custom-table mb-0">
+            <thead class="table-light text-uppercase fs-7 text-secondary">
+              <tr>
+                <th class="ps-4">Guest Info</th>
+                <th>Contact Details</th>
+                <th>Aadhaar Card</th>
+                <th>Room Assigned</th>
+                <th>Dates (In/Out)</th>
+                <th>Status</th>
+                <th class="text-center pe-4" style="width: 180px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let guest of paginatedGuests()">
+                <td class="ps-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                      {{ guest.customerName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <h6 class="fw-bold text-dark mb-0">{{ guest.customerName }}</h6>
+                      <small class="text-muted">Booking #{{ guest.bookingId }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="small">
+                    <div class="text-dark"><i class="bi bi-telephone text-muted me-1.5"></i>{{ guest.phone }}</div>
+                    <div class="text-muted"><i class="bi bi-envelope text-muted me-1.5"></i>{{ guest.email }}</div>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-monospace text-secondary small bg-light border px-2 py-1 rounded">
+                    {{ guest.aadhaar }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-medium">
+                    <i class="bi bi-door-open text-primary me-1"></i>
+                    Room {{ guest.roomNumber }}
+                  </span>
+                </td>
+                <td>
+                  <div class="small">
+                    <span class="text-success"><i class="bi bi-box-arrow-in-right me-1"></i>{{ guest.checkInDate }}</span><br>
+                    <span class="text-danger"><i class="bi bi-box-arrow-right me-1"></i>{{ guest.checkOutDate }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="guest.isActive ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary border border-secondary-subtle' + ' rounded-pill px-2.5 py-1'">
+                    {{ guest.isActive ? 'Active' : 'Deactivated' }}
+                  </span>
+                </td>
+                <td class="text-center pe-4">
+                  <div class="d-flex gap-2 justify-content-center">
+                    <button class="btn btn-outline-primary btn-sm" (click)="openExtendModal(guest.bookingId)">
+                      <i class="bi bi-calendar-plus me-1"></i> Extend
+                    </button>
+                    <button class="btn btn-light border btn-sm text-dark" (click)="viewDetails(guest)">
+                      Details
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #emptyGuests>
+          <div class="text-center py-5">
+            <i class="bi bi-people text-muted display-4"></i>
+            <h5 class="mt-3 text-secondary">No Guests Found</h5>
+            <p class="text-muted small mb-0">No matching active checked-in guests found in the system.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div *ngIf="enrichedGuests().length > guestPageSize" class="card-footer bg-white border-top border-light py-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+        <span class="text-muted small">
+          Showing <strong>{{ (guestPage - 1) * guestPageSize + 1 }}</strong> to 
+          <strong>{{ (guestPage * guestPageSize) > enrichedGuests().length ? enrichedGuests().length : (guestPage * guestPageSize) }}</strong> 
+          of <strong>{{ enrichedGuests().length }}</strong> guests.
+        </span>
+        <div class="pagination-controls d-flex align-items-center gap-2">
+          <button class="btn btn-light border btn-sm" [disabled]="guestPage === 1" (click)="prevPage()">
+            <i class="bi bi-chevron-left"></i> Previous
+          </button>
+          <span class="small fw-semibold text-secondary px-2">Page {{ guestPage }} of {{ totalPages() }}</span>
+          <button class="btn btn-light border btn-sm" [disabled]="guestPage === totalPages()" (click)="nextPage()">
+            Next <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===========================
+     EXTEND STAY MODAL
+=========================== -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="showExtendModal" (click)="closeExtendModal()">
+  <div class="modal-card bg-white shadow rounded-4 p-4" style="max-width: 440px; width: 90%; z-index: 1050;" (click)="$event.stopPropagation()">
+    <div class="modal-header border-0 pb-3 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-plus text-primary me-2"></i>Extend Booking Stay</h5>
+      <button class="btn-close" (click)="closeExtendModal()"></button>
+    </div>
+    <div class="modal-body border-0 pt-0 pb-4">
+      <div class="mb-3">
+        <label class="form-label fw-semibold small text-secondary">Booking ID Reference</label>
+        <input class="form-control bg-light" [value]="'#' + extendBookingId" disabled>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold small text-secondary">New Departure Date</label>
+        <input type="date" class="form-control" [(ngModel)]="newCheckOutDate">
+      </div>
+    </div>
+    <div class="modal-footer border-0 pt-0 d-flex justify-content-end gap-2">
+      <button class="btn btn-light border px-4" (click)="closeExtendModal()">Cancel</button>
+      <button class="btn btn-primary px-4" (click)="extendStay()">Confirm Extension</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===========================
+     BOOKING DETAILS MODAL
+=========================== -->
+<div class="modal-overlay d-flex align-items-center justify-content-center" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="modal-card bg-white shadow-lg rounded-4 p-4" style="max-width: 580px; width: 95%; z-index: 1050;" (click)="$event.stopPropagation()">
+    <div class="modal-header border-0 pb-3 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-info-circle text-primary me-2"></i>Booking Information</h5>
+      <button class="btn-close" (click)="closeDetailsModal()"></button>
+    </div>
+    <div class="modal-body border-0 pt-0">
+      <div class="row g-3">
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Booking ID</label>
+          <p class="text-primary fw-bold mb-0">#{{ selectedBooking.bookingId }}</p>
+        </div>
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Guest Name</label>
+          <p class="text-dark fw-semibold mb-0">{{ selectedBooking.customerName }}</p>
+        </div>
+        <div class="col-6" *ngIf="selectedBooking.email">
+          <label class="fw-semibold text-secondary small text-uppercase">Email Address</label>
+          <p class="text-dark mb-0 small">{{ selectedBooking.email }}</p>
+        </div>
+        <div class="col-6" *ngIf="selectedBooking.phone">
+          <label class="fw-semibold text-secondary small text-uppercase">Phone Number</label>
+          <p class="text-dark mb-0 small">{{ selectedBooking.phone }}</p>
+        </div>
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Check-In Date</label>
+          <p class="text-dark mb-0 small"><i class="bi bi-calendar-check text-success me-1"></i>{{ selectedBooking.checkInDate }}</p>
+        </div>
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Check-Out Date</label>
+          <p class="text-dark mb-0 small"><i class="bi bi-calendar-x text-danger me-1"></i>{{ selectedBooking.checkOutDate || selectedBooking.checkOutDate }}</p>
+        </div>
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Rooms Booked</label>
+          <p class="text-dark mb-0 small">
+            <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-door-open me-1"></i>Room {{ selectedBooking.roomNumber }}</span>
+          </p>
+        </div>
+        <div class="col-6">
+          <label class="fw-semibold text-secondary small text-uppercase">Billing Total</label>
+          <p class="text-dark fw-bold mb-0">₹{{ selectedBooking.totalAmount | number }}</p>
+        </div>
+        <div class="col-12">
+          <hr class="my-2">
+          <div class="d-flex align-items-center justify-content-between">
+            <span class="fw-semibold text-secondary small text-uppercase">Operational Status</span>
+            <span class="badge rounded-pill px-3 py-1.5" 
+                  [ngClass]="{
+                    'bg-success': selectedBooking.status === 'CheckedIn' || selectedBooking.status === 'Confirmed',
+                    'bg-danger': selectedBooking.status === 'CheckedOut' || selectedBooking.status === 'Cancelled',
+                    'bg-primary': selectedBooking.status === 'CheckedIn'
+                  }">
+              {{ selectedBooking.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer border-0 pt-4 d-flex justify-content-end">
+      <button class="btn btn-secondary px-4" (click)="closeDetailsModal()">Close Details</button>
+    </div>
+  </div>
+</div>

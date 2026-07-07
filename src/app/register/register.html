@@ -1,0 +1,218 @@
+<div class="container-fluid p-0">
+  <div class="row g-0 min-vh-100">
+
+    <!-- Left Side -->
+    <div class="col-lg-6 d-none d-lg-block image-side">
+
+      <div class="overlay">
+
+        <div class="brand">
+          <h2>🏨 HotelStay</h2>
+        </div>
+
+        <div class="content">
+          <h1>Create Your Guest Account</h1>
+
+          <p>
+            Register once and enjoy quick bookings, exclusive offers,
+            secure payments, and premium hospitality.
+          </p>
+
+          <div class="features">
+            <div>
+              <i class="bi bi-check-circle-fill me-2"></i>
+              Secure Registration
+            </div>
+
+            <div>
+              <i class="bi bi-stars me-2"></i>
+              Best Hotel Deals
+            </div>
+
+            <div>
+              <i class="bi bi-shield-lock-fill me-2"></i>
+              Safe & Trusted
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Right Side -->
+
+    <div class="col-lg-6 d-flex align-items-center justify-content-center">
+
+      <div class="card register-card shadow-lg border-0">
+
+        <div class="card-body p-4">
+
+          <div class="text-end mb-3">
+            Already have an account?
+            <a routerLink="/login">Login</a>
+          </div>
+
+          <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">
+              Guest Registration
+            </h2>
+
+            <p class="text-muted">
+              Create your account to continue
+            </p>
+          </div>
+
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+            <div class="row">
+
+              <!-- User Name -->
+
+              <div class="col-md-6 mb-3">
+
+                <label class="form-label fw-semibold">
+                  Full Name
+                </label>
+
+                <input type="text" class="form-control" formControlName="userName" placeholder="Enter full name">
+
+                <div class="text-danger mt-1"
+                  *ngIf="registerForm.get('userName')?.touched && registerForm.get('userName')?.invalid">
+
+                  <small *ngIf="registerForm.get('userName')?.errors?.['required']">
+                    Full Name is required
+                  </small>
+
+                  <small *ngIf="registerForm.get('userName')?.errors?.['minlength']">
+                    Full Name must contain at least 3 characters
+                  </small>
+
+                </div>
+
+              </div>
+
+              <!-- Email -->
+
+              <div class="col-md-6 mb-3">
+
+                <label class="form-label fw-semibold">
+                  Email Address
+                </label>
+
+                <input type="email" class="form-control" formControlName="email" placeholder="Enter email address">
+
+                <div class="text-danger mt-1"
+                  *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+
+                  <small *ngIf="registerForm.get('email')?.errors?.['required']">
+                    Email is required
+                  </small>
+
+                  <small *ngIf="registerForm.get('email')?.errors?.['email']">
+                    Enter a valid email address
+                  </small>
+
+                </div>
+
+              </div>
+
+              <!-- Phone -->
+
+              <div class="col-md-6 mb-3">
+
+                <label class="form-label fw-semibold">
+                  Phone Number
+                </label>
+
+                <input type="tel" class="form-control" formControlName="phone" placeholder="Enter phone number">
+
+                <div class="text-danger mt-1"
+                  *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
+
+                  <small *ngIf="registerForm.get('phone')?.errors?.['required']">
+                    Phone Number is required
+                  </small>
+
+                  <small *ngIf="registerForm.get('phone')?.errors?.['pattern']">
+                    Enter a valid 10-digit phone number
+                  </small>
+
+                </div>
+
+              </div>
+
+              <!-- Password -->
+
+              <div class="col-md-6 mb-3">
+
+                <label class="form-label fw-semibold">
+                  Password
+                </label>
+
+                <input type="password" class="form-control" formControlName="password" placeholder="Enter password">
+
+                <div class="text-danger mt-1"
+                  *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+
+                  <small *ngIf="registerForm.get('password')?.errors?.['required']">
+                    Password is required
+                  </small>
+
+                  <small *ngIf="registerForm.get('password')?.errors?.['minlength']">
+                    Password must be at least 6 characters
+                  </small>
+
+                </div>
+
+              </div>
+
+              <!-- Aadhaar -->
+
+              <div class="col-12 mb-3">
+
+                <label class="form-label fw-semibold">
+                  Aadhaar Number
+                </label>
+
+                <input type="text" maxlength="12" class="form-control" formControlName="aadhaarNumber"
+                  placeholder="Enter 12-digit Aadhaar number">
+
+                <div class="text-danger mt-1"
+                  *ngIf="registerForm.get('aadhaarNumber')?.touched && registerForm.get('aadhaarNumber')?.invalid">
+
+                  <small *ngIf="registerForm.get('aadhaarNumber')?.errors?.['required']">
+                    Aadhaar Number is required
+                  </small>
+
+                  <small *ngIf="registerForm.get('aadhaarNumber')?.errors?.['pattern']">
+                    Aadhaar Number must contain exactly 12 digits
+                  </small>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="d-grid mt-3">
+
+              <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid">
+
+                Create Account
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>

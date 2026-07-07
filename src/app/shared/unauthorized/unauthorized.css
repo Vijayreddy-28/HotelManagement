@@ -1,0 +1,61 @@
+.unauthorized-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    padding: 20px;
+}
+
+.unauthorized-card {
+    width: 100%;
+    max-width: 500px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 45px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+}
+
+.icon-wrapper {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+}
+
+.unauthorized-card h1 {
+    font-size: 64px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.unauthorized-card h3 {
+    color: #334155;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.unauthorized-card p {
+    color: #64748b;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.unauthorized-card .btn {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 10px 25px;
+}
+
+.unauthorized-card .btn:hover {
+    transform: translateY(-2px);
+    transition: .3s;
+}

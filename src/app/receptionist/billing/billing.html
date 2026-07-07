@@ -1,0 +1,74 @@
+<div class="billing-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="page-title">Billing & Invoicing</h2>
+      <p class="page-subtitle">Manage guest invoices, service charges, and payments</p>
+    </div>
+  </div>
+
+  <!-- Search Toolbar -->
+  <div class="toolbar-panel mb-4">
+    <div class="row align-items-center">
+      <div class="col-12 col-md-5">
+        <div class="input-group">
+          <span class="input-group-text search-icon-bg">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" class="form-control search-input" placeholder="Search invoices by guest or room...">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="table custom-table align-middle">
+        <thead>
+          <tr>
+            <th>Invoice No</th>
+            <th>Guest</th>
+            <th>Room No</th>
+            <th>Room Cost</th>
+            <th>Service Cost</th>
+            <th>Total Due</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bill of bills">
+            <td>
+              <span class="invoice-no-tag">{{ bill.invoiceNo }}</span>
+            </td>
+            <td>
+              <div class="fw-semibold text-dark">{{ bill.guestName }}</div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">Room {{ bill.roomNo }}</span>
+            </td>
+            <td>₹{{ bill.roomCharges | number }}</td>
+            <td>₹{{ bill.serviceCharges | number }}</td>
+            <td>
+              <div class="fw-bold amount-text">₹{{ (bill.roomCharges + bill.serviceCharges) | number }}</div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'bg-success-subtle text-success': bill.status === 'Paid',
+                'bg-danger-subtle text-danger': bill.status === 'Unpaid'
+              }">
+                {{ bill.status }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button *ngIf="bill.status === 'Unpaid'" class="btn btn-sm btn-primary-custom me-2">Collect Payment</button>
+              <button class="btn btn-light btn-sm btn-icon" type="button" aria-label="Print Invoice">
+                <i class="bi bi-printer"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,150 @@
+<div class="cart-workspace">
+  <!-- Page Header -->
+  <div class="cart-header">
+    <div class="header-text">
+      <h2 class="page-title">
+        <i class="bi bi-cart-check-fill"></i>
+        Food Cart & Checkout
+      </h2>
+      <p class="page-subtitle">Verify your selected items and confirm room delivery</p>
+    </div>
+    
+    <a routerLink="/customer/food" class="btn-back-menu">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Menu</span>
+    </a>
+  </div>
+
+  <!-- Cart Content Layout -->
+  <div class="cart-grid" *ngIf="cartItems().length > 0; else emptyCartTpl">
+    <!-- Left Column: Items and Room Info -->
+    <div class="cart-details-col">
+      <!-- Room Delivery Info Card -->
+      <div class="info-card room-delivery-card">
+        <div class="card-icon">
+          <i class="bi bi-geo-alt-fill"></i>
+        </div>
+        <div class="card-details">
+          <h3>Delivery Location</h3>
+          <p class="room-number-display">Room {{ roomNumber }}</p>
+          <span class="booking-ref-badge">Booking Ref: #{{ bookingId }}</span>
+        </div>
+        <a routerLink="/customer/food" class="btn-change-room" title="Change delivery room">
+          Change Room
+        </a>
+      </div>
+
+      <!-- Items List Card -->
+      <div class="info-card items-list-card">
+        <h3>Order Items</h3>
+        
+        <div class="items-table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Dish</th>
+                <th class="text-center">Price</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-right">Total</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of cartItems()">
+                <td>
+                  <div class="dish-item-info">
+                    <span class="veg-badge" [class.veg]="item.isVeg" [class.non-veg]="!item.isVeg"></span>
+                    <div>
+                      <span class="dish-item-name">{{ item.name }}</span>
+                      <span class="dish-item-category">{{ item.category }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center unit-price">₹{{ item.price }}</td>
+                <td class="text-center">
+                  <div class="qty-controls-cart">
+                    <button class="qty-btn-cart minus" (click)="decreaseQty(item)" aria-label="Decrease quantity">
+                      <i class="bi bi-dash"></i>
+                    </button>
+                    <span class="qty-display-cart">{{ item.quantity }}</span>
+                    <button class="qty-btn-cart plus" (click)="increaseQty(item)" aria-label="Increase quantity">
+                      <i class="bi bi-plus"></i>
+                    </button>
+                  </div>
+                </td>
+                <td class="text-right item-total">₹{{ item.price * item.quantity }}</td>
+                <td class="text-center">
+                  <button class="btn-delete-cart" (click)="removeItem(item)" aria-label="Remove item">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Special Instructions Card -->
+      <div class="info-card instructions-card">
+        <h3>
+          <i class="bi bi-pencil-square"></i>
+          Special Instructions
+        </h3>
+        <p class="field-subtext">Add any notes for the chef (e.g. allergies, spice level, cutlery requirements)</p>
+        <textarea
+          class="instructions-textarea"
+          rows="3"
+          placeholder="Enter instructions here..."
+          [(ngModel)]="specialInstructions"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Right Column: Order Summary & Placement -->
+    <div class="cart-summary-col">
+      <div class="summary-sticky-card">
+        <h3>Bill Summary</h3>
+        
+        <div class="bill-breakdown">
+          <div class="bill-row">
+            <span>Items Subtotal</span>
+            <span>₹{{ subtotal() }}</span>
+          </div>
+          <div class="bill-row">
+            <span>Taxes & Service Charges (5%)</span>
+            <span>₹{{ tax() }}</span>
+          </div>
+          <hr class="bill-divider" />
+          <div class="bill-row grand-total-row">
+            <span>Total Amount</span>
+            <span class="total-price">₹{{ grandTotal() }}</span>
+          </div>
+        </div>
+
+        <button class="btn-confirm-order" (click)="confirmOrder()">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Confirm & Place Order</span>
+        </button>
+
+        <div class="safety-badge">
+          <i class="bi bi-shield-check"></i>
+          <span>Secure checkout. Food will be billed directly to your room.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty Cart Template -->
+  <ng-template #emptyCartTpl>
+    <div class="empty-cart-state">
+      <div class="empty-icon-wrapper">
+        <i class="bi bi-bag-x-fill"></i>
+      </div>
+      <h3>Your Food Cart is Empty</h3>
+      <p>Browse our kitchen menu and add items to your cart to make an order.</p>
+      <a routerLink="/customer/food" class="btn-browse-menu">
+        Browse Food Menu
+      </a>
+    </div>
+  </ng-template>
+</div>

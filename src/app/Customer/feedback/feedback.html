@@ -1,0 +1,164 @@
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<div class="feedback-container">
+
+    <div class="feedback-card">
+
+        <h2 class="title">Share Your Experience</h2>
+
+        <p class="subtitle">
+            Your feedback helps us improve our services
+            and provide a better stay for every guest.
+
+        </p>
+
+        <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
+
+            <!-- Booking ID -->
+            <div class="mb-3">
+                <label class="form-label">
+                    Booking ID
+                </label>
+
+                <input type="number" class="form-control" formControlName="bookingId">
+
+            </div>
+
+
+            <!-- Ratings -->
+
+            <div class="rating-grid">
+
+                <!-- Food -->
+
+                <div class="rating-card">
+
+                    <label class="form-label">
+                        Restaurant & Food Quality
+                    </label>
+
+                    <div class="star-rating">
+
+                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('foodRating')
+                           ? 'bi-star-fill active-star'
+                           : 'bi-star'" (click)="setRating('foodRating',star)">
+                        </i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Room -->
+
+                <div class="rating-card">
+
+                    <label class="form-label">
+                        Room Comfort & Cleanliness
+                    </label>
+
+                    <div class="star-rating">
+
+                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('roomRating')
+                           ? 'bi-star-fill active-star'
+                           : 'bi-star'" (click)="setRating('roomRating',star)">
+                        </i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Hygiene -->
+
+                <div class="rating-card">
+
+                    <label class="form-label">
+                        Hygiene & Sanitation
+                    </label>
+
+                    <div class="star-rating">
+
+                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('hygieneRating')
+                           ? 'bi-star-fill active-star'
+                           : 'bi-star'" (click)="setRating('hygieneRating',star)">
+                        </i>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Staff -->
+
+                <div class="rating-card">
+
+                    <label class="form-label">
+                        Staff Courtesy & Service
+                    </label>
+
+                    <div class="star-rating">
+
+                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('staffRating')
+                           ? 'bi-star-fill active-star'
+                           : 'bi-star'" (click)="setRating('staffRating',star)">
+                        </i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Overall Rating -->
+
+            <div class="rating-card">
+
+                <label class="form-label">
+                    Overall Experience
+                </label>
+
+                <div class="star-rating">
+
+                    <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('overallRating')
+                       ? 'bi-star-fill active-star'
+                       : 'bi-star'" (click)="setRating('overallRating',star)">
+                    </i>
+
+                </div>
+
+            </div>
+
+
+            <!-- Comments -->
+
+            <div class="mt-3">
+
+                <label class="form-label">
+                    Additional Comments
+                </label>
+
+                <textarea rows="3" class="form-control" formControlName="comments"
+                    placeholder="Tell us what you enjoyed or how we can improve your next stay....">
+                </textarea>
+
+            </div>
+
+
+            <!-- Submit -->
+
+            <div class="text-center mt-4">
+
+                <button type="submit" class="btn btn-submit" [disabled]="feedbackForm.invalid">
+
+                    Submit Feedback
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

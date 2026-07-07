@@ -1,0 +1,88 @@
+/* Full Page */
+.welcome-container {
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Content */
+.content {
+  text-align: center;
+  animation: fadeIn 0.8s ease;
+  max-width: 800px;
+  padding: 20px;
+}
+
+/* Title */
+.title {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #0f4c81;
+  margin-bottom: 15px;
+  letter-spacing: -1px;
+}
+
+/* Subtitle */
+.subtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  margin-bottom: 50px;
+  font-weight: bold;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-custom {
+  min-width: 220px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+/* Employee Button */
+.employee-btn {
+  background: #0f4c81;
+  color: white;
+}
+
+.employee-btn:hover {
+  background: #0b3b63;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(15, 76, 129, 0.25);
+}
+
+/* Guest Button */
+.guest-btn {
+  background: #d4af37;
+  color: white;
+}
+
+.guest-btn:hover {
+  background: #c19b26;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

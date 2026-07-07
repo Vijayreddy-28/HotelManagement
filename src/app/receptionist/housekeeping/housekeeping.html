@@ -1,0 +1,287 @@
+<div class="housekeeping-container">
+
+    <!-- ===================== PAGE HEADER ===================== -->
+    <div class="page-header-wrapper d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="page-title">Housekeeping Operations</h2>
+            <p class="page-subtitle">
+                Manage housekeeping staff, tasks and progress
+            </p>
+        </div>
+
+        <button class="btn btn-primary-custom d-flex align-items-center gap-2" (click)="openAssignmentModal()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Assign Task</span>
+        </button>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PART 1 : EMPLOYEES -->
+    <!-- ===================================================== -->
+
+    <div class="section-container mb-5">
+
+        <h3 class="section-title mb-3">
+            <i class="bi bi-people-fill me-2 text-primary"></i>
+            Available Employees
+        </h3>
+
+        <div class="row g-4">
+
+            <div class="col-md-4 col-lg-3" *ngFor="let emp of employees()">
+
+                <div class="employee-card">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="emp-avatar bg-primary text-white"
+                            style="background: linear-gradient(135deg, #0f4c81, #366ef1);">
+                            {{ emp.name.charAt(0).toUpperCase() }}
+                        </div>
+
+                        <div>
+
+                            <h5 class="mb-1">{{ emp.name }}</h5>
+
+                            <small class="text-muted">
+                                Employee ID : {{ emp.employeeId }}
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <p class="mb-2">
+                        <i class="bi bi-envelope me-2"></i>
+                        {{ emp.email }}
+                    </p>
+
+                    <p class="mb-3">
+                        <i class="bi bi-telephone me-2"></i>
+                        {{ emp.phoneNumber }}
+                    </p>
+
+                    <span class="badge" [ngClass]="{
+                            'bg-success': emp.availablityStatus=='Available',
+                            'bg-warning text-dark': emp.availablityStatus=='Busy'
+                          }">
+                        {{ emp.availablityStatus }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PART 2 : TASKS -->
+    <!-- ===================================================== -->
+
+    <div class="section-container mb-5">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h3 class="section-title mb-0">
+                <i class="bi bi-card-checklist me-2 text-success"></i>
+                Generated Tasks
+            </h3>
+
+            <span class="badge bg-light text-dark border">
+                {{ tasks().length }} Tasks
+            </span>
+
+        </div>
+
+        <div class="table-card">
+
+            <div class="table-responsive">
+
+                <table class="table custom-table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Task ID</th>
+
+                            <th>Room</th>
+
+                            <th>Task Type</th>
+
+                            <th>Status</th>
+
+                            <th>Created At</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr *ngFor="let task of tasks()">
+
+                            <td>
+                                <span class="task-id-badge">
+                                    {{ task.taskId }}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <strong>
+                                    Room {{ task.roomNumber }}
+                                </strong>
+
+                            </td>
+
+                            <td>
+
+                                {{ task.taskType }}
+
+                            </td>
+
+                            <td>
+
+                                <span class="badge" [ngClass]="{
+                                        'bg-secondary':task.status=='Created',
+                                        'bg-warning text-dark':task.status=='Assigned',
+                                        'bg-success':task.status=='InProgress'
+                                      }">
+
+                                    {{ task.status }}
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                {{ task.createdAt | date:'short' }}
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- ASSIGN TASK MODAL -->
+    <!-- ===================================================== -->
+
+    <div class="modal-overlay" *ngIf="isModalOpen" (click)="closeAssignmentModal()">
+
+        <div class="modal-card" (click)="$event.stopPropagation()">
+
+            <div class="modal-header d-flex justify-content-between align-items-center">
+
+                <h4 class="modal-title">
+                    Assign Housekeeping Task
+                </h4>
+
+                <button class="btn-close-modal" (click)="closeAssignmentModal()">
+
+                    <i class="bi bi-x-lg"></i>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body mt-3">
+
+                <form [formGroup]="assignForm" (ngSubmit)="assignTask()">
+
+                    <!-- Employee -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Employee
+                        </label>
+
+                        <select class="form-select" formControlName="employeeId">
+
+                            <option value="">
+                                Select Employee
+                            </option>
+
+                            <option *ngFor="let emp of employees()" [value]="emp.employeeId">
+
+                                {{ emp.employeeId }} - {{ emp.name }}
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Task -->
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+                            Task
+                        </label>
+
+                        <select class="form-select" formControlName="taskId">
+
+                            <option value="">
+                                Select Task
+                            </option>
+
+                            <option *ngFor="let task of tasks()" [value]="task.taskId">
+
+                                {{ task.taskId }}
+                                -
+                                Room {{ task.roomNumber }}
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-end gap-2">
+
+                        <button type="button" class="btn btn-secondary" (click)="closeAssignmentModal()">
+
+                            Cancel
+
+                        </button>
+
+                        <button type="submit" class="btn btn-primary-custom" [disabled]="assignForm.invalid">
+
+                            Confirm
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

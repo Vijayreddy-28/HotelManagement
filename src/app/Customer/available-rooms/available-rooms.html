@@ -1,0 +1,101 @@
+<div class="search-card-wrapper">
+  <form [formGroup]="searchForm" (ngSubmit)="searchRooms()" class="enterprise-form">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label"> <i class="bi bi-calendar-check"></i> Check-In Date
+        </label>
+        <input type="date" class="form-control-custom" (change)="setMinCheckoutDate()" [min]="todayDate"
+          formControlName="checkIn" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"> <i class="bi bi-calendar-x"></i> Check-Out Date </label>
+        <input type="date" [min]="minCheckoutDate" class="form-control-custom" formControlName="checkOut" />
+      </div>
+
+      <div class="form-group action-group">
+        <button type="submit" class="btn-enterprise-primary" style="background-color: #0f4c81;">
+          <i class="bi bi-search"></i>
+          <span>Check Availability</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="rooms().length === 0" class="d-flex justify-content-center align-items-center py-5">
+  <div class="empty-room-card text-center">
+    <i class="bi bi-house-door display-1 mb-3" style="color: rgb(197, 59, 59);"></i>
+
+    <h3 class="fw-bold mb-2">No Rooms Available</h3>
+
+    <p class="text-muted mb-4">
+      Sorry, there are no rooms available for the selected dates.
+      Please choose different dates or try again later.
+    </p>
+  </div>
+</div>
+<div class="rooms-grid" *ngIf="rooms().length > 0">
+  <div class="room-premium-card" *ngFor="let room of rooms()">
+    <div class="card-media-banner">
+      <span class="room-badge-indicator" [class.available]="room.status === 'Available'">
+        {{ room.status }}
+      </span>
+      <div class="price-overlay">
+        <span class="currency">₹</span>
+        <span class="amount">{{ room.pricePerNight }}</span>
+        <span class="period">/ night</span>
+      </div>
+    </div>
+
+    <div class="room-card-body">
+      <div class="room-title-row">
+        <h3 class="room-identifier">Room {{ room.roomNumber }}</h3>
+        <span class="room-type-pill">{{ room.typeName }}</span>
+      </div>
+
+      <hr class="divider-subtle" />
+
+      <div class="room-spec-matrix">
+        <div class="spec-item">
+          <i class="bi bi-layers"></i>
+          <div class="spec-text">
+            <span class="spec-label">Floor</span>
+            <span class="spec-value">{{ room.floor }}</span>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <i class="bi bi-single-bed"></i>
+          <div class="spec-text">
+            <span class="spec-label">Beds</span>
+            <span class="spec-value">{{ room.noOfBeds }}</span>
+          </div>
+        </div>
+
+        <div class="spec-item">
+          <i class="bi bi-people"></i>
+          <div class="spec-text">
+            <span class="spec-label">Max Guest</span>
+            <span class="spec-value">{{ room.maxOccupancy }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-action-footer">
+        <button class="btn-enterprise-success" (click)="addToCart(room)" type="button">
+          <i class="bi bi-cart-plus"></i>
+          <span>Add to Booking</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Floating Cart -->
+<div class="floating-cart" *ngIf="cartService.cartRooms().length > 0">
+  <button class="cart-btn" routerLink="/customer/cart">
+    <i class="bi bi-cart-fill"></i>
+    <span>View Rooms</span>
+    <span class="cart-count">{{ cartService.cartRooms().length }}</span>
+  </button>
+</div>
