@@ -2,36 +2,32 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h2 class="page-title text-dark fw-bold mb-1">Room Status & Grid</h2>
-      <p class="page-subtitle text-muted mb-0">Live visual state of the retreat's inventory, occupancy, and cleanings.</p>
+      <p class="page-subtitle text-muted mb-0">Live visual state of the retreat's inventory, occupancy, and cleanings.
+      </p>
     </div>
   </div>
 
   <!-- Filters Toolbar -->
   <div class="card border-0 shadow-sm mb-4">
     <div class="card-body p-2 d-flex flex-wrap gap-2">
-      <button class="btn px-4 py-2 fw-semibold btn-filter" 
-              [class.active]="activeFilter() === 'All'" 
-              (click)="filterRooms('All')">
+      <button class="btn px-4 py-2 fw-semibold btn-filter" [class.active]="activeFilter() === 'All'"
+        (click)="filterRooms('All')">
         All Rooms
       </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-available" 
-              [class.active]="activeFilter() === 'Available'" 
-              (click)="filterRooms('Available')">
+      <button class="btn px-4 py-2 fw-semibold btn-filter-available" [class.active]="activeFilter() === 'Available'"
+        (click)="filterRooms('Available')">
         <i class="bi bi-check-circle-fill me-1.5"></i> Available
       </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-occupied" 
-              [class.active]="activeFilter() === 'Occupied'" 
-              (click)="filterRooms('Occupied')">
+      <button class="btn px-4 py-2 fw-semibold btn-filter-occupied" [class.active]="activeFilter() === 'Occupied'"
+        (click)="filterRooms('Occupied')">
         <i class="bi bi-people-fill me-1.5"></i> Occupied
       </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-cleaning" 
-              [class.active]="activeFilter() === 'Cleaning'" 
-              (click)="filterRooms('Cleaning')">
+      <button class="btn px-4 py-2 fw-semibold btn-filter-cleaning" [class.active]="activeFilter() === 'Cleaning'"
+        (click)="filterRooms('Cleaning')">
         <i class="bi bi-stars me-1.5"></i> Cleaning
       </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-dirty" 
-              [class.active]="activeFilter() === 'Dirty'" 
-              (click)="filterRooms('Dirty')">
+      <button class="btn px-4 py-2 fw-semibold btn-filter-dirty" [class.active]="activeFilter() === 'Dirty'"
+        (click)="filterRooms('Dirty')">
         <i class="bi bi-exclamation-triangle-fill me-1.5"></i> Dirty
       </button>
     </div>
@@ -39,9 +35,8 @@
 
   <!-- Rooms Grid -->
   <div class="row g-4" *ngIf="filteredRooms().length > 0; else noRooms">
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" *ngFor="let room of filteredRooms()">
-      <div class="room-card card border-0 shadow-sm h-100 transition-all rounded-4 overflow-hidden" 
-           [ngClass]="{
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3" *ngFor="let room of filteredRooms()">
+      <div class="room-card card border-0 shadow-sm h-100 transition-all rounded-4 overflow-hidden" [ngClass]="{
              'border-start-available': room.status === 'Available',
              'border-start-occupied': room.status === 'Occupied',
              'border-start-cleaning': room.status === 'Cleaning',
@@ -50,14 +45,12 @@
         <div class="card-body p-3 d-flex flex-column justify-content-between">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="room-number fw-bold text-dark fs-5">Room {{ room.roomNumber }}</span>
-            <span class="status-indicator-dot rounded-circle" 
-                  [ngClass]="{
+            <span class="status-indicator-dot rounded-circle" [ngClass]="{
                     'bg-success': room.status === 'Available',
                     'bg-primary': room.status === 'Occupied',
                     'bg-warning': room.status === 'Cleaning',
                     'bg-danger': room.status === 'Dirty'
-                  }"
-                  style="width: 10px; height: 10px;">
+                  }" style="width: 10px; height: 10px;">
             </span>
           </div>
 
@@ -72,8 +65,7 @@
 
           <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-light">
             <span class="room-price fw-bold text-dark">₹{{ room.pricePerNight | number }}/N</span>
-            <span class="badge rounded-pill px-2.5 py-1 text-uppercase fs-8 fw-bold" 
-                  [ngClass]="{
+            <span class="badge rounded-pill px-2.5 py-1 text-uppercase fs-8 fw-bold" [ngClass]="{
                     'bg-success-subtle text-success border border-success-subtle': room.status === 'Available',
                     'bg-primary-subtle text-primary border border-primary-subtle': room.status === 'Occupied',
                     'bg-warning-subtle text-warning border border-warning-subtle': room.status === 'Cleaning',

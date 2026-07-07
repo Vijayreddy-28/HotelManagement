@@ -25,6 +25,9 @@ export class ReceptionistHousekeepingComponent implements OnInit {
   isModalOpen = false;
   employees = signal<Employee[]>([]);
   tasks = signal<HousekeepingTask[]>([]);
+  loadingEmployees = signal<boolean>(true);
+  loadingTasks = signal<boolean>(true);
+  assigningTask = false;
   assignForm: FormGroup;
 
   constructor(
@@ -45,29 +48,32 @@ export class ReceptionistHousekeepingComponent implements OnInit {
   }
 
   loadEmployees(): void {
+    this.loadingEmployees.set(true);
     this.userService.getHouseKeepingEmployees().subscribe({
       next: (res: any) => {
-        console.log(res)
         // API may return an array directly or an object containing the array
         const employeeArray = Array.isArray(res) ? res : (res?.employees ?? []);
         this.employees.set(employeeArray);
+        this.loadingEmployees.set(false);
       },
       error: (err) => {
-        this.toastr.error(err.error?.message || 'Unable to load employees');
+        this.loadingEmployees.set(false);
+        this.toastr.error(err.error?.message || 'Unable to load employees.', 'API Error');
       }
     });
   }
 
   loadTasks(): void {
+    this.loadingTasks.set(true);
     this.housekeepingService.getTasks().subscribe({
       next: (res: any) => {
         const tasksArray = Array.isArray(res) ? res : (res?.tasks ?? []);
-        setTimeout(() => {
-          this.tasks.set(tasksArray);
-        });
+        this.tasks.set(tasksArray);
+        this.loadingTasks.set(false);
       },
       error: (err) => {
-        this.toastr.error(err.error?.message || 'Unable to load');
+        this.loadingTasks.set(false);
+        this.toastr.error(err.error?.message || 'Unable to load housekeeping tasks.', 'API Error');
       }
     });
   }
@@ -94,9 +100,10 @@ export class ReceptionistHousekeepingComponent implements OnInit {
 
     const { taskId, employeeId } = this.assignForm.value;
 
+    this.assigningTask = true;
     this.housekeepingService.assignTask(taskId, employeeId).subscribe({
       next: (response: any) => {
-        console.log(response);
+        this.assigningTask = false;
         const employee = this.employees().find(
           e => e.employeeId == employeeId
         );
@@ -109,7 +116,8 @@ export class ReceptionistHousekeepingComponent implements OnInit {
         this.closeAssignmentModal();
       },
       error: (err) => {
-        this.toastr.error(err.error?.message || 'Failed to assign task');
+        this.assigningTask = false;
+        this.toastr.error(err.error?.message || 'Failed to assign task.', 'API Error');
       }
     });
   }

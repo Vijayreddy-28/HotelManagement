@@ -112,3 +112,14 @@
   justify-content: center;
   color: #64748b;
 }
+
+.form-check-input:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+@media (max-width: 576px) {
+  .billing-container {
+    padding: 1rem;
+  }
+}

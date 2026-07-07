@@ -18,6 +18,6 @@ export class HousekeepingService {
     public assignTask(taskId: number, empId: number) {
         const token = sessionStorage.getItem('token');
         const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-        return this.http.post(`${this.url}/assign?taskId=${taskId}&employeeId=${empId}`, { headers });
+        return this.http.post(`${this.url}/assign?taskId=${taskId}&employeeId=${empId}`, {}, { headers });
     }
 }

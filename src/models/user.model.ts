@@ -3,5 +3,7 @@ export class Employee {
     name: string = '';
     email: string = '';
     phoneNumber: string = '';
+    adhaarNumber: string = '';
     availablityStatus: string = '';
+    role: string = '';
 }

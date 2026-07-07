@@ -12,6 +12,8 @@ import { FoodMenuService } from '../services/foodmenu.service';
 import { UserService } from '../services/user.service';
 import { HousekeepingService } from '../services/Housekeeping.service';
 import { FeedbackService } from '../services/feedback.service';
+import { BillingService } from '../services/billing.service';
+import { PaymentService } from '../services/payment.service';
 
 
 export const appConfig: ApplicationConfig = {
@@ -27,7 +29,10 @@ export const appConfig: ApplicationConfig = {
     FoodMenuService,
     HousekeepingService,
     UserService,
+    BillingService,
     FeedbackService,
+    PaymentService,
+
     provideToastr({
       positionClass: 'toast-bottom-right',
       timeOut: 2000,

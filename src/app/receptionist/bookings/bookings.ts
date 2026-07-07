@@ -128,7 +128,7 @@ export class ReceptionistBookingsComponent implements OnInit {
   // Filtered Today's Check-ins
   filteredCheckIns = computed(() => {
     const term = this.searchText.trim().toLowerCase();
-    return this.todayCheckIns().filter(b => 
+    return this.todayCheckIns().filter(b =>
       b.bookingId.toString().includes(term) ||
       b.customerName.toLowerCase().includes(term)
     );
@@ -137,7 +137,7 @@ export class ReceptionistBookingsComponent implements OnInit {
   // Filtered Today's Check-outs
   filteredCheckOuts = computed(() => {
     const term = this.searchText.trim().toLowerCase();
-    return this.todayCheckOuts().filter(b => 
+    return this.todayCheckOuts().filter(b =>
       b.bookingId.toString().includes(term) ||
       b.customerName.toLowerCase().includes(term)
     );
@@ -146,21 +146,21 @@ export class ReceptionistBookingsComponent implements OnInit {
   // Enriched & Filtered Guests List with full properties
   enrichedGuests = computed(() => {
     const term = this.guestSearchText.trim().toLowerCase();
-    
+
     // Map backend current guests to enrich with phone, email, Aadhaar, and rooms
     const list = this.currentGuests().map(guest => {
       const matched = this.customersList().find(c => c.name.toLowerCase() === guest.customerName.toLowerCase());
-      
+
       // Deterministic realistic Aadhaar generator based on customer user ID or booking ID
       const seedId = matched?.userId || guest.bookingId;
-      const aadhaar = `3812 4920 ${String(1000 + seedId).padStart(4, '0')}`;
-      
+      const aadhaar = matched?.adhaarNumber || '';
+
       return {
         bookingId: guest.bookingId,
         customerName: guest.customerName,
         email: matched?.email || 'guest@retreat.com',
         phone: matched?.phoneNumber || '9876543210',
-        aadhaar: aadhaar,
+        adhaarNumber: aadhaar,
         roomNumber: this.bookingRoomsMap.get(guest.bookingId) || 'Loading...',
         checkInDate: guest.checkInDate,
         checkOutDate: guest.checkOutDate,
@@ -175,7 +175,7 @@ export class ReceptionistBookingsComponent implements OnInit {
       g.customerName.toLowerCase().includes(term) ||
       g.email.toLowerCase().includes(term) ||
       g.phone.includes(term) ||
-      g.aadhaar.includes(term) ||
+      g.adhaarNumber.includes(term) ||
       g.roomNumber.toLowerCase().includes(term)
     );
   });
@@ -213,7 +213,7 @@ export class ReceptionistBookingsComponent implements OnInit {
       ...booking,
       roomNumber: this.bookingRoomsMap.get(booking.bookingId) || 'Retrieving...'
     };
-    
+
     // Attempt to enrich with customer info if not present
     const matched = this.customersList().find(c => c.name.toLowerCase() === booking.customerName.toLowerCase());
     if (matched) {

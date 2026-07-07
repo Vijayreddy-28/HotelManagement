@@ -16,5 +16,5 @@ export class ActivityLogResponse {
     public description: string,
     public activityType: ActivityType,
     public createdAt: string
-  ) {}
+  ) { }
 }

@@ -24,7 +24,7 @@ export class ReceptionistRoomsComponent implements OnInit {
     return list.filter((r) => r.status.toLowerCase() === filter.toLowerCase());
   });
 
-  constructor(private roomService: RoomService) {}
+  constructor(private roomService: RoomService) { }
 
   ngOnInit(): void {
     this.loadRooms();

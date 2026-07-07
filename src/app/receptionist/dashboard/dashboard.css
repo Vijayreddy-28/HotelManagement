@@ -1,316 +1,229 @@
+/* ==========================================
+   Dashboard Container & Global Vibrancy
+   ========================================== */
 .dashboard-container {
-  padding: 1.5rem;
+  background: linear-gradient(180deg, #f0f4f9 0%, #e9eef5 100%);
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
 }
 
+/* Vivid Title Styling */
 .welcome-title {
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.25rem;
-}
-
-.welcome-subtitle {
-  color: #64748b;
-  font-size: 0.95rem;
-  margin-bottom: 0;
+  background: linear-gradient(45deg, #1e293b, #4f46e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.03em;
 }
 
 .date-badge {
-  background-color: #ffffff;
-  padding: 0.5rem 1rem;
-  border-radius: 30px;
-  font-weight: 500;
-  color: #475569;
-  font-size: 0.9rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  background: #ffffff !important;
+  border: 2px solid #e0e7ff !important;
+  color: #4f46e5 !important;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08) !important;
 }
 
-/* Stat Cards */
-.stat-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  border: 1px solid #f1f5f9;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-}
-
-.card-icon-wrapper {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.card-details {
-  flex-grow: 1;
-}
-
-.stat-value {
-  font-size: 1.625rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.15rem;
-  line-height: 1.2;
-}
-
-.stat-label {
-  color: #64748b;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-.progress-bar-container {
-  height: 6px;
-  background-color: #f1f5f9;
-  border-radius: 3px;
+/* ==========================================
+   Hyper-Colorful Card Layouts
+   ========================================== */
+.dashboard-container .card {
+  border: none !important;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
   overflow: hidden;
-  margin-bottom: 0.35rem;
 }
 
-.progress-bar-fill {
-  height: 100%;
-  background-color: #3b82f6;
-  border-radius: 3px;
+/* Dynamic Hover Lift & Soft Glow */
+.dashboard-container .row.g-3 .card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-.stat-trend {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #475569;
+/* Scale up icons on hover */
+.dashboard-container .card:hover .rounded-circle i {
+  transform: scale(1.2) rotate(5deg);
 }
 
-/* Content Panels */
-.content-panel {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  border: 1px solid #f1f5f9;
-  height: 100%;
+.dashboard-container .card .rounded-circle i {
+  transition: transform 0.3s ease;
+  display: inline-block;
 }
 
-.panel-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 0;
+/* --- Specific Color Customization for Each Card --- */
+
+/* Card 1: Revenue (Emerald Spark) */
+.dashboard-container .row.g-3>div:nth-child(1) .card {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
 }
 
-/* Custom Table Styles */
-.custom-table {
-  margin-top: 0.5rem;
+/* Card 2: Check-Ins (Electric Indigo) */
+.dashboard-container .row.g-3>div:nth-child(2) .card {
+  background: #f5f3ff !important;
+  border-left: 5px solid #6366f1 !important;
 }
 
-.custom-table th {
-  font-weight: 600;
-  color: #64748b;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #f1f5f9;
+.dashboard-container .row.g-3>div:nth-child(2) .bg-primary-subtle {
+  background: #e0e7ff !important;
+  color: #4f46e5 !important;
 }
 
-.custom-table td {
-  padding: 0.9rem 0.5rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #475569;
-  font-size: 0.9rem;
+.dashboard-container .row.g-3>div:nth-child(2) h3 {
+  color: #312e81 !important;
 }
 
-.avatar-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #e2e8f0;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.85rem;
+/* Card 3: Check-Outs (Vivid Amber) */
+.dashboard-container .row.g-3>div:nth-child(3) .card {
+  background: #fffbeb !important;
+  border-left: 5px solid #f59e0b !important;
 }
 
-.btn-primary-custom {
-  background-color: #2563eb;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 0.8rem;
-  border: none;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
+.dashboard-container .row.g-3>div:nth-child(3) .bg-warning-subtle {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
 }
 
-.btn-primary-custom:hover {
-  background-color: #1d4ed8;
-  color: #ffffff;
+.dashboard-container .row.g-3>div:nth-child(3) h3 {
+  color: #78350f !important;
 }
 
-/* Timeline Styles */
-.activity-timeline {
-  position: relative;
-  padding-left: 2rem;
-  margin-top: 1rem;
+/* Card 4: In-House Guests (Teal Bliss) */
+.dashboard-container .row.g-3>div:nth-child(4) .card {
+  background: #f0fdfa !important;
+  border-left: 5px solid #0d9488 !important;
 }
 
-.activity-timeline::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  background-color: #e2e8f0;
+.dashboard-container .row.g-3>div:nth-child(4) .bg-success-subtle {
+  background: #ccfbf1 !important;
+  color: #0f766e !important;
 }
 
-.timeline-item {
-  position: relative;
-  margin-bottom: 1.25rem;
+.dashboard-container .row.g-3>div:nth-child(4) h3 {
+  color: #115e59 !important;
 }
 
-.timeline-item:last-child {
-  margin-bottom: 0;
+/* Card 5: Available Rooms (Sky Cyan) */
+.dashboard-container .row.g-3>div:nth-child(5) .card {
+  background: #f0f9ff !important;
+  border-left: 5px solid #0284c7 !important;
 }
 
-.timeline-badge {
-  position: absolute;
-  left: -2rem;
-  top: 2px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 0.6rem;
-  box-shadow: 0 0 0 3px #ffffff;
+.dashboard-container .row.g-3>div:nth-child(5) .bg-info-subtle {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
 }
 
-.timeline-content {
-  background-color: #f8fafc;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #f1f5f9;
+.dashboard-container .row.g-3>div:nth-child(5) h3 {
+  color: #0c4a6e !important;
 }
 
-.timeline-title {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #334155;
+/* Card 6: Occupied Rooms (Rose Crimson) */
+.dashboard-container .row.g-3>div:nth-child(6) .card {
+  background: #fff5f5 !important;
+  border-left: 5px solid #e11d48 !important;
 }
 
-.timeline-time {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  white-space: nowrap;
+.dashboard-container .row.g-3>div:nth-child(6) .bg-danger-subtle {
+  background: #ffe4e6 !important;
+  color: #be123c !important;
 }
 
-.content-panel {
-  padding: 18px;
+.dashboard-container .row.g-3>div:nth-child(6) h3 {
+  color: #881337 !important;
 }
 
-.panel-header {
-  margin-bottom: 0;
+/* Card 7: Dirty Rooms (Fiery Orange/Red) */
+.dashboard-container .row.g-3>div:nth-child(7) .card {
+  background: #fdf2f8 !important;
+  border-left: 5px solid #db2777 !important;
 }
 
-.activity-timeline {
-  margin-top: 0;
+.dashboard-container .row.g-3>div:nth-child(7) .bg-danger-subtle {
+  background: #fce7f3 !important;
+  color: #be185d !important;
 }
 
-.timeline-item {
-  padding: 10px 0;
+.dashboard-container .row.g-3>div:nth-child(7) h3 {
+  color: #831843 !important;
 }
 
-.timeline-badge {
-  width: 38px;
-  height: 38px;
-  font-size: 15px;
+/* Card 8: Total Bookings (Cool Violet) */
+.dashboard-container .row.g-3>div:nth-child(8) .card {
+  background: #faf5ff !important;
+  border-left: 5px solid #9333ea !important;
 }
 
-.timeline-content {
-  margin-left: 12px;
+.dashboard-container .row.g-3>div:nth-child(8) .bg-secondary-subtle {
+  background: #f3e8ff !important;
+  color: #6b21a8 !important;
 }
 
-.timeline-title {
-  font-size: 15px;
-  font-weight: 600;
+.dashboard-container .row.g-3>div:nth-child(8) h3 {
+  color: #581c87 !important;
 }
 
-.timeline-time {
-  font-size: 13px;
-}
 
-/* Mobile responsiveness media queries for Dashboard */
-@media (max-width: 768px) {
-  .dashboard-container {
-    padding: 1rem;
-  }
-  
-  .stat-card {
-    padding: 1rem;
-  }
-  
-  .stat-value {
-    font-size: 1.35rem;
-  }
-}
-
-@media (max-width: 576px) {
-  .dashboard-container > .d-flex {
-    flex-direction: column;
-    align-items: stretch !important;
-    gap: 1rem;
-  }
-  
-  .date-badge {
-    align-self: flex-start;
-  }
-  
-  .custom-table th, .custom-table td {
-    padding: 0.75rem 0.5rem;
-  }
-}
-
-/* Redesigned Dashboard Timeline */
+/* ==========================================
+   Vibrant Activity Feed & Timeline
+   ========================================== */
 .timeline-container {
-  position: relative;
+  border-left: 3px dashed #cbd5e1 !important;
 }
 
 .timeline-item {
-  position: relative;
-  padding-bottom: 0.5rem;
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
+  margin-bottom: 1.75rem !important;
 }
 
 .timeline-body {
-  border-radius: 8px;
-  background-color: #f8fafc;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   padding: 1rem 1.25rem !important;
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
-.timeline-body:hover {
+.timeline-item:hover .timeline-body {
+  background: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.06);
   transform: translateX(4px);
-  background-color: #f1f5f9;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* High-Contrast Timeline Micro-Badges */
+.timeline-item .rounded-circle {
+  box-shadow: 0 0 0 6px #ffffff, 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* Angular CSS Class Injection Fallbacks for Colored Indicators */
+.timeline-item .bg-success,
+.timeline-item .text-success {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.timeline-item .bg-danger,
+.timeline-item .text-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+.timeline-item .bg-warning,
+.timeline-item .text-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+
+.timeline-item .bg-primary,
+.timeline-item .text-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+}
+
+.timeline-item .bg-info,
+.timeline-item .text-info {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+}
+
+/* System Badge Pill Color */
+.badge.bg-primary-subtle {
+  background: linear-gradient(45deg, #e0e7ff, #eef2ff) !important;
+  color: #4338ca !important;
+  border: 1px solid #c7d2fe !important;
+  font-weight: 700;
 }
