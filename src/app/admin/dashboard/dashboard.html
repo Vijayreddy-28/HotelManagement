@@ -1,0 +1,235 @@
+<div class="admin-dashboard">
+
+  <!-- ===== HEADER BAR ===== -->
+  <div class="dash-header">
+    <div class="dash-header-left">
+      <h1 class="dash-title">Overview</h1>
+      <p class="dash-subtitle">Welcome back, <strong>{{ today | date:'EEEE, MMMM d' }}</strong></p>
+    </div>
+    <div class="dash-header-right">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span>Live Data</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="skeleton-grid" *ngIf="loadingStats">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="sk-line short"></div>
+      <div class="sk-line tall"></div>
+      <div class="sk-line medium"></div>
+    </div>
+  </div>
+
+  <!-- ===== KPI METRIC CARDS ===== -->
+  <div class="metrics-grid" *ngIf="!loadingStats">
+
+    <!-- Revenue Card (Accent) -->
+    <div class="metric-card accent-card">
+      <div class="metric-icon-wrap accent-icon">
+        <i class="bi bi-currency-rupee"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Today's Revenue</span>
+        <span class="metric-value">₹{{ bookingStats.todayRevenue | number:'1.0-0' }}</span>
+        <span class="metric-badge badge-green">
+          <i class="bi bi-arrow-up-short"></i> Earnings today
+        </span>
+      </div>
+    </div>
+
+    <!-- Check-ins -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-blue">
+        <i class="bi bi-box-arrow-in-right"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Today's Check-ins</span>
+        <span class="metric-value">{{ bookingStats.todayCheckIns }}</span>
+        <span class="metric-badge badge-blue">Guests arriving</span>
+      </div>
+    </div>
+
+    <!-- Check-outs -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-amber">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Today's Check-outs</span>
+        <span class="metric-value">{{ bookingStats.todayCheckOuts }}</span>
+        <span class="metric-badge badge-amber">Departing today</span>
+      </div>
+    </div>
+
+    <!-- In-House Guests -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-teal">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">In-House Guests</span>
+        <span class="metric-value">{{ bookingStats.activeBookings }}</span>
+        <span class="metric-badge badge-teal">Active bookings</span>
+      </div>
+    </div>
+
+    <!-- Available Rooms -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-cyan">
+        <i class="bi bi-door-open-fill"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Available Rooms</span>
+        <span class="metric-value">{{ roomStats.availableRooms }}<span class="metric-denom"> / {{ roomStats.totalRooms }}</span></span>
+        <span class="metric-badge badge-cyan">Ready for check-in</span>
+      </div>
+    </div>
+
+    <!-- Occupied Rooms -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-red">
+        <i class="bi bi-house-door-fill"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Occupied Rooms</span>
+        <span class="metric-value">{{ roomStats.occupiedRooms }}</span>
+        <span class="metric-badge badge-red">Currently in use</span>
+      </div>
+    </div>
+
+    <!-- Dirty Rooms -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-pink">
+        <i class="bi bi-exclamation-circle-fill"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Housekeeping Needed</span>
+        <span class="metric-value">{{ roomStats.dirtyRooms }}</span>
+        <span class="metric-badge badge-pink"><i class="bi bi-brush me-1"></i>Require cleaning</span>
+      </div>
+    </div>
+
+    <!-- Total Bookings -->
+    <div class="metric-card">
+      <div class="metric-icon-wrap icon-violet">
+        <i class="bi bi-journal-bookmark-fill"></i>
+      </div>
+      <div class="metric-body">
+        <span class="metric-label">Total Bookings</span>
+        <span class="metric-value">{{ bookingStats.totalBookings }}</span>
+        <span class="metric-badge badge-violet">All-time system count</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== OCCUPANCY + ROOM STATUS ROW ===== -->
+  <div class="dashboard-row" *ngIf="!loadingStats">
+
+    <!-- Occupancy Rate Mini Card -->
+    <div class="occupancy-panel panel-card">
+      <div class="panel-header">
+        <span class="panel-title"><i class="bi bi-pie-chart-fill"></i> Occupancy Rate</span>
+      </div>
+      <div class="occupancy-ring-wrapper">
+        <svg class="ring-svg" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+          <circle class="ring-fill" cx="60" cy="60" r="50"
+            [style.stroke-dashoffset]="314 - (314 * (roomStats.occupiedRooms / (roomStats.totalRooms || 1)))"
+          ></circle>
+        </svg>
+        <div class="ring-label">
+          <span class="ring-pct">{{ roomStats.totalRooms > 0 ? ((roomStats.occupiedRooms / roomStats.totalRooms) * 100 | number:'1.0-0') : 0 }}%</span>
+          <span class="ring-sub">Occupied</span>
+        </div>
+      </div>
+      <div class="occupancy-legend">
+        <div class="legend-row"><span class="leg-dot dot-occupied"></span><span>Occupied</span><strong>{{ roomStats.occupiedRooms }}</strong></div>
+        <div class="legend-row"><span class="leg-dot dot-available"></span><span>Available</span><strong>{{ roomStats.availableRooms }}</strong></div>
+        <div class="legend-row"><span class="leg-dot dot-cleaning"></span><span>Cleaning</span><strong>{{ roomStats.cleaningRooms }}</strong></div>
+        <div class="legend-row"><span class="leg-dot dot-maintenance"></span><span>Maintenance</span><strong>{{ roomStats.maintainingRooms }}</strong></div>
+      </div>
+    </div>
+
+    <!-- Quick Stats Panel -->
+    <div class="quick-stats-panel panel-card">
+      <div class="panel-header">
+        <span class="panel-title"><i class="bi bi-lightning-charge-fill"></i> Quick Stats</span>
+      </div>
+      <div class="quick-stats-list">
+        <div class="quick-stat-row">
+          <div class="qs-icon-wrap qs-green"><i class="bi bi-check-circle-fill"></i></div>
+          <div class="qs-info">
+            <span class="qs-label">Confirmed Bookings</span>
+            <span class="qs-value">{{ bookingStats.totalBookings }}</span>
+          </div>
+        </div>
+        <div class="quick-stat-row">
+          <div class="qs-icon-wrap qs-red"><i class="bi bi-x-circle-fill"></i></div>
+          <div class="qs-info">
+            <span class="qs-label">Cancelled Bookings</span>
+            <span class="qs-value">{{ bookingStats.cancelledBookings }}</span>
+          </div>
+        </div>
+        <div class="quick-stat-row">
+          <div class="qs-icon-wrap qs-pink"><i class="bi bi-stars"></i></div>
+          <div class="qs-info">
+            <span class="qs-label">Out of Service</span>
+            <span class="qs-value">{{ roomStats.outOfServiceRooms }}</span>
+          </div>
+        </div>
+        <div class="quick-stat-row">
+          <div class="qs-icon-wrap qs-blue"><i class="bi bi-building-check"></i></div>
+          <div class="qs-info">
+            <span class="qs-label">Total Rooms</span>
+            <span class="qs-value">{{ roomStats.totalRooms }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== RECENT ACTIVITY FEED ===== -->
+  <div class="activity-panel panel-card">
+    <div class="panel-header">
+      <span class="panel-title"><i class="bi bi-clock-history"></i> Recent Activity</span>
+      <span class="panel-badge">{{ recentActivities.length }} events</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="activity-loading" *ngIf="loadingActivities">
+      <div class="sk-line medium" *ngFor="let i of [1,2,3,4]" style="height:60px; border-radius: 12px; margin-bottom: 12px;"></div>
+    </div>
+
+    <!-- Activity List -->
+    <div class="activity-feed" *ngIf="!loadingActivities && recentActivities.length > 0">
+      <div class="activity-row" *ngFor="let activity of recentActivities">
+        <div class="activity-dot-wrap">
+          <div class="activity-icon-dot" [ngClass]="getActivityTypeClass(activity.activityType)">
+            <i class="bi" [ngClass]="getActivityIcon(activity.activityType)"></i>
+          </div>
+          <div class="activity-connector"></div>
+        </div>
+        <div class="activity-content">
+          <div class="activity-top-row">
+            <span class="activity-title">{{ activity.title }}</span>
+            <span class="activity-time">{{ activity.createdAt | date:'h:mm a, MMM d' }}</span>
+          </div>
+          <p class="activity-desc">{{ activity.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="activity-empty" *ngIf="!loadingActivities && recentActivities.length === 0">
+      <i class="bi bi-calendar2-x"></i>
+      <h5>No Recent Activity</h5>
+      <p>System logs will populate as operations occur.</p>
+    </div>
+  </div>
+
+</div>

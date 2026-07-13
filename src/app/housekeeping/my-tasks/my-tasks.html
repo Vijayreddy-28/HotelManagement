@@ -1,0 +1,238 @@
+<div class="tasks-page">
+
+  <!-- ===================== PAGE HEADER ===================== -->
+  <div class="tasks-header">
+    <div class="tasks-header-left">
+      <h1 class="tasks-title">Housekeeping Operations</h1>
+      <p class="tasks-subtitle">Manage room cleaning status updates through Assigned, In Progress, and Completed states.</p>
+    </div>
+    <button class="btn-refresh" (click)="loadTasks()" type="button" title="Refresh Tasks">
+      <i class="bi bi-arrow-clockwise"></i>
+      <span>Refresh Queue</span>
+    </button>
+  </div>
+
+  <!-- ===================== LOADING SKELETON ===================== -->
+  <div class="tasks-skeleton-wrap" *ngIf="loading()">
+    <div class="tasks-skeleton-row" *ngFor="let i of [1,2,3]">
+      <div class="sk-id"></div>
+      <div class="sk-lines"><div class="sk-line w40"></div></div>
+      <div class="sk-pill sk-cell"></div>
+      <div class="sk-btn sk-cell text-end"></div>
+    </div>
+  </div>
+
+  <div class="tasks-content" *ngIf="!loading()">
+
+    <!-- ===================== 1. ASSIGNED BLOCK ===================== -->
+    <div class="task-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-assigned"></span>
+          <h2>Assigned Tasks</h2>
+        </div>
+        <span class="section-count-badge badge-assigned">{{ getTasksByStatus('Assigned').length }} Tasks</span>
+      </div>
+
+      <div class="tasks-table-card" *ngIf="getTasksByStatus('Assigned').length > 0; else emptyAssigned">
+        <div class="table-responsive">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th class="th-id">Task ID</th>
+                <th>Room</th>
+                <th>Task Type</th>
+                <th>Priority</th>
+                <th>Assigned At</th>
+                <th class="th-action text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of getTasksByStatus('Assigned')" class="task-row">
+                <td class="td-id"><span class="task-id-chip">#{{ task.taskId }}</span></td>
+                <td><strong class="room-highlight">Room {{ task.roomNumber }}</strong></td>
+                <td class="text-secondary fw-semibold">{{ task.taskType }}</td>
+                <td>
+                  <span class="priority-badge" [ngClass]="priorityClass(task.priority)">
+                    {{ priorityLabel(task.priority) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date-text">
+                    <i class="bi bi-clock"></i> {{ task.assignedAt ? (task.assignedAt | date:'mediumTime') : '—' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn-task-start" [disabled]="processingTaskId() === task.taskId" (click)="openConfirmModal(task, 'start')">
+                    <span *ngIf="processingTaskId() !== task.taskId"><i class="bi bi-play-fill"></i> Mark Start</span>
+                    <span *ngIf="processingTaskId() === task.taskId" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyAssigned>
+        <div class="block-empty-state">
+          <i class="bi bi-clipboard-check"></i>
+          <p>No tasks currently assigned.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===================== 2. IN PROGRESS BLOCK ===================== -->
+    <div class="task-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-progress"></span>
+          <h2>In Progress Tasks</h2>
+        </div>
+        <span class="section-count-badge badge-progress">{{ getTasksByStatus('InProgress').length }} Tasks</span>
+      </div>
+
+      <div class="tasks-table-card" *ngIf="getTasksByStatus('InProgress').length > 0; else emptyInProgress">
+        <div class="table-responsive">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th class="th-id">Task ID</th>
+                <th>Room</th>
+                <th>Task Type</th>
+                <th>Priority</th>
+                <th>Started At</th>
+                <th class="th-action text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of getTasksByStatus('InProgress')" class="task-row">
+                <td class="td-id"><span class="task-id-chip">#{{ task.taskId }}</span></td>
+                <td><strong class="room-highlight">Room {{ task.roomNumber }}</strong></td>
+                <td class="text-secondary fw-semibold">{{ task.taskType }}</td>
+                <td>
+                  <span class="priority-badge" [ngClass]="priorityClass(task.priority)">
+                    {{ priorityLabel(task.priority) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date-text">
+                    <i class="bi bi-clock-history"></i> {{ task.inProgressAt ? (task.inProgressAt | date:'mediumTime') : '—' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn-task-complete" [disabled]="processingTaskId() === task.taskId" (click)="openConfirmModal(task, 'complete')">
+                    <span *ngIf="processingTaskId() !== task.taskId"><i class="bi bi-check-lg"></i> Mark Complete</span>
+                    <span *ngIf="processingTaskId() === task.taskId" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyInProgress>
+        <div class="block-empty-state">
+          <i class="bi bi-play-circle-fill"></i>
+          <p>No tasks currently in progress.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===================== 3. COMPLETED BLOCK ===================== -->
+    <div class="task-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-completed"></span>
+          <h2>Completed Tasks</h2>
+        </div>
+        <span class="section-count-badge badge-completed">{{ getTasksByStatus('Completed').length }} Tasks</span>
+      </div>
+
+      <div class="tasks-table-card" *ngIf="getTasksByStatus('Completed').length > 0; else emptyCompleted">
+        <div class="table-responsive">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th class="th-id">Task ID</th>
+                <th>Room</th>
+                <th>Task Type</th>
+                <th>Priority</th>
+                <th>Completed At</th>
+                <th class="th-action text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of getTasksByStatus('Completed')" class="task-row">
+                <td class="td-id"><span class="task-id-chip">#{{ task.taskId }}</span></td>
+                <td><strong class="room-highlight">Room {{ task.roomNumber }}</strong></td>
+                <td class="text-secondary fw-semibold">{{ task.taskType }}</td>
+                <td>
+                  <span class="priority-badge" [ngClass]="priorityClass(task.priority)">
+                    {{ priorityLabel(task.priority) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date-text">
+                    <i class="bi bi-calendar-check-fill"></i> {{ task.completedAt ? (task.completedAt | date:'mediumTime') : '—' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <span class="badge-completed"><i class="bi bi-patch-check-fill"></i> Available</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyCompleted>
+        <div class="block-empty-state">
+          <i class="bi bi-check-circle-fill"></i>
+          <p>No completed tasks in this shift.</p>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============================================================
+     CUSTOM CONFIRMATION MODAL OVERLAY
+     ============================================================ -->
+<div class="confirm-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+  <div class="confirm-modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="confirm-modal-body">
+      
+      <div class="confirm-icon-wrap" [ngClass]="confirmActionType === 'start' ? 'icon-wrap-blue' : 'icon-wrap-green'">
+        <i class="bi" [ngClass]="confirmActionType === 'start' ? 'bi-play-circle-fill' : 'bi-check-circle-fill'"></i>
+      </div>
+
+      <h3 class="confirm-title">
+        {{ confirmActionType === 'start' ? 'Mark Start Task?' : 'Mark Complete Task?' }}
+      </h3>
+      
+      <p class="confirm-desc">
+        <span *ngIf="confirmActionType === 'start'">
+          You are about to mark start the cleaning service for <strong>Room {{ confirmTargetTask?.roomNumber }}</strong>. 
+          This will update the room status to <strong>Cleaning</strong>.
+        </span>
+        <span *ngIf="confirmActionType === 'complete'">
+          Confirm that <strong>Room {{ confirmTargetTask?.roomNumber }}</strong> has been fully cleaned and inspected. 
+          This will update the room status to <strong>Available</strong>.
+        </span>
+      </p>
+
+    </div>
+
+    <div class="confirm-modal-footer">
+      <button type="button" class="btn-confirm-cancel" (click)="closeConfirmModal()">Cancel</button>
+      <button type="button" class="btn-confirm-proceed" 
+        [ngClass]="confirmActionType === 'start' ? 'btn-proceed-blue' : 'btn-proceed-green'"
+        (click)="confirmAction()">
+        Confirm & Update
+      </button>
+    </div>
+
+  </div>
+</div>

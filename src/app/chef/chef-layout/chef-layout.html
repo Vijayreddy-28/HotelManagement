@@ -1,0 +1,91 @@
+<div class="app-layout">
+
+  <!-- ===================== PREMIUM NAVIGATION BAR ===================== -->
+  <header class="app-navbar">
+    <div class="navbar-container">
+
+      <!-- Brand Logo & Name -->
+      <div class="brand-wrapper" routerLink="/chef/dashboard" style="cursor: pointer;">
+        <div class="brand-logo">
+          <i class="bi bi-egg-fried"></i>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-name">The Canopy Retreat</h1>
+          <span class="brand-subtitle">Kitchen Hub</span>
+        </div>
+      </div>
+
+      <!-- Navigation links in the middle (Desktop only) -->
+      <nav class="navbar-links">
+        <a class="nav-item-link" routerLink="/chef/dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="bi bi-speedometer2"></i>
+          <span>Kitchen Dashboard</span>
+        </a>
+      </nav>
+
+      <!-- Right Action items (Desktop only) -->
+      <div class="navbar-actions">
+
+        <!-- User Profile Dropdown -->
+        <div class="profile-dropdown-wrapper">
+          <div class="profile-trigger">
+            <div class="profile-avatar">
+              {{ userName.charAt(0).toUpperCase() }}
+              <span class="online-indicator"></span>
+            </div>
+            <div class="profile-details-text">
+              <span class="user-display-name">{{ userName }}</span>
+              <span class="user-display-role">Executive Chef</span>
+            </div>
+            <i class="bi bi-chevron-down dropdown-arrow"></i>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown-menu">
+            <div class="dropdown-header">
+              <p class="dropdown-user-name">{{ userName }}</p>
+              <p class="dropdown-user-role">Kitchen Staff</p>
+            </div>
+            <hr class="dropdown-divider">
+            <button class="dropdown-item logout-item" (click)="logout()" type="button">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hamburger Menu Toggle Button (Mobile only) -->
+      <button type="button" class="btn-hamburger-menu" (click)="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
+        <i class="bi" [ngClass]="isMobileMenuOpen() ? 'bi-x-lg' : 'bi-list'"></i>
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ===================== MOBILE NAVIGATION DROPDOWN MENU ===================== -->
+  <div class="mobile-dropdown-overlay" [class.open]="isMobileMenuOpen()">
+    <nav class="mobile-menu-links">
+      <a class="mobile-menu-link" routerLink="/chef/dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">
+        <i class="bi bi-speedometer2"></i>
+        <span>Kitchen Dashboard</span>
+      </a>
+      <hr class="menu-divider">
+      <button class="mobile-menu-link logout-item" (click)="logout(); closeMobileMenu()" type="button">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===================== MAIN CONTENT WORKSPACE ===================== -->
+  <div class="app-viewport">
+    <main class="app-content-workspace">
+      <div class="workspace-container">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+
+</div>

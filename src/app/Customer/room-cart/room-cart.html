@@ -1,75 +1,78 @@
 <div class="cart-workspace">
-  <div class="workspace-header">
-    <a routerLink="/customer/rooms" class="btn-back">
+  <!-- Page Header -->
+  <div class="cart-header">
+    <div class="header-text">
+      <h2 class="page-title">
+        <i class="bi bi-calendar-check-fill" style="color: #0f4c81; font-size: 1.6rem;"></i>
+        Room Cart & Checkout
+      </h2>
+      <p class="page-subtitle">Verify your selected rooms and confirm your booking dates</p>
+    </div>
+    
+    <a routerLink="/customer/rooms" class="btn-back-menu">
       <i class="bi bi-arrow-left"></i>
       <span>Back to Rooms</span>
     </a>
-    <h2 class="page-title">Booking Cart</h2>
   </div>
 
-  <div *ngIf="cartService.cartRooms().length === 0" class="empty-state-card">
-    <div class="empty-icon-wrapper">
-      <i class="bi bi-cart-x"></i>
-    </div>
-    <h3>Your Cart is Empty</h3>
-    <p>You haven't selected any rooms yet. Browse our luxury suites and available rooms to add them to your booking.</p>
-    <a routerLink="/customer/rooms" class="btn-enterprise-primary">
-      <i class="bi bi-search"></i>
-      <span>Browse Available Rooms</span>
-    </a>
-  </div>
-
-  <!-- Active Cart Layout -->
-  <div *ngIf="cartService.cartRooms().length > 0" class="cart-grid">
-    <!-- Selected Rooms Column -->
-    <div class="rooms-column">
-      <div class="column-header">
+  <!-- Cart Content Layout -->
+  <div class="cart-grid" *ngIf="cartService.cartRooms().length > 0; else emptyCartTpl">
+    <!-- Left Column: Selected Rooms -->
+    <div class="cart-details-col">
+      <!-- Items List Card -->
+      <div class="info-card items-list-card">
         <h3>Selected Rooms ({{ cartService.cartRooms().length }})</h3>
-      </div>
-
-      <div class="rooms-list">
-        <div class="room-cart-item" *ngFor="let room of cartService.cartRooms()">
-          <div class="item-visual">
-            <span class="room-number-pill">Room {{ room.roomNumber }}</span>
-          </div>
-
-          <div class="item-details">
-            <div class="details-main">
-              <h4 class="room-type">{{ room.typeName }}</h4>
-              <div class="specs-row">
-                <span class="spec-pill"><i class="bi bi-layers"></i> Floor {{ room.floor }}</span>
-                <span class="spec-pill"><i class="bi bi-single-bed"></i> {{ room.noOfBeds }} Beds</span>
-                <span class="spec-pill"><i class="bi bi-people"></i> Max {{ room.maxOccupancy }} Guest(s)</span>
-              </div>
-            </div>
-
-            <div class="item-pricing">
-              <div class="price-rate">
-                <span class="currency">₹</span>
-                <span class="rate-amount">{{ room.pricePerNight }}</span>
-                <span class="rate-period">/ night</span>
-              </div>
-
-              <button class="btn-remove" (click)="removeFromCart(room.roomId)" title="Remove room from booking">
-                <i class="bi bi-trash3"></i>
-                <span>Remove</span>
-              </button>
-            </div>
-          </div>
+        
+        <div class="items-table-wrapper">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Room Type</th>
+                <th class="text-center">Room No</th>
+                <th class="text-center">Floor</th>
+                <th class="text-center">Beds</th>
+                <th class="text-center">Guests Limit</th>
+                <th class="text-right">Price per Night</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let room of cartService.cartRooms()">
+                <td>
+                  <div class="dish-item-info">
+                    <span class="room-indicator-dot"></span>
+                    <div>
+                      <span class="dish-item-name">{{ room.typeName }}</span>
+                      <span class="dish-item-category">Luxury Suite</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center unit-price">Room {{ room.roomNumber }}</td>
+                <td class="text-center unit-price">Floor {{ room.floor }}</td>
+                <td class="text-center unit-price">{{ room.noOfBeds }} Beds</td>
+                <td class="text-center unit-price">Max {{ room.maxOccupancy }} Guest(s)</td>
+                <td class="text-right item-total">₹{{ room.pricePerNight }}</td>
+                <td class="text-center">
+                  <button class="btn-delete-cart" (click)="removeFromCart(room.roomId)" aria-label="Remove room">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- Booking details & checkout Column -->
-    <div class="summary-column">
-      <div class="summary-card">
+    <!-- Right Column: Booking Details & Checkout -->
+    <div class="cart-summary-col">
+      <div class="summary-sticky-card">
         <h3>Booking Details</h3>
-        <hr class="divider-subtle" />
-
+        
         <form [formGroup]="bookingForm" (ngSubmit)="confirmBooking()" class="booking-form">
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-calendar-check"></i> Check-In Date</label>
-            <input type="date" class="form-control-custom" formControlName="checkIn" />
+            <label class="form-label-select" for="checkIn"><i class="bi bi-calendar-check"></i> Check-In Date</label>
+            <input type="date" id="checkIn" class="form-control-custom" formControlName="checkIn" />
             <div class="error-msg"
               *ngIf="bookingForm.get('checkIn')?.touched && bookingForm.get('checkIn')?.errors?.['required']">
               Check-in date is required.
@@ -77,8 +80,8 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-calendar-x"></i> Check-Out Date</label>
-            <input type="date" class="form-control-custom" formControlName="checkOut" />
+            <label class="form-label-select" for="checkOut"><i class="bi bi-calendar-x"></i> Check-Out Date</label>
+            <input type="date" id="checkOut" class="form-control-custom" formControlName="checkOut" />
             <div class="error-msg"
               *ngIf="bookingForm.get('checkOut')?.touched && bookingForm.get('checkOut')?.errors?.['required']">
               Check-out date is required.
@@ -86,9 +89,8 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label"><i class="bi bi-people"></i> Number of Guests</label>
-            <input type="number" class="form-control-custom" formControlName="numberOfGuests" min="1" placeholder="1"
-              max="10" />
+            <label class="form-label-select" for="numberOfGuests"><i class="bi bi-people"></i> Number of Guests</label>
+            <input type="number" id="numberOfGuests" class="form-control-custom" formControlName="numberOfGuests" min="1" max="10" placeholder="1" />
             <div class="error-msg"
               *ngIf="bookingForm.get('numberOfGuests')?.touched && bookingForm.get('numberOfGuests')?.errors?.['required']">
               Number of guests is required.
@@ -99,29 +101,62 @@
             </div>
           </div>
 
-          <div class="summary-calculations">
-            <h4>Price Summary</h4>
-            <div class="calc-row">
-              <span class="calc-label">Total Room Rate</span>
-              <span class="calc-val">₹{{ getTotalPricePerNight() }} / night</span>
+          <div class="bill-breakdown">
+            <div class="bill-row">
+              <span>Total Room Rate</span>
+              <span>₹{{ getTotalPricePerNight() }} / night</span>
             </div>
-            <div class="calc-row">
-              <span class="calc-label">Length of Stay</span>
-              <span class="calc-val">{{ getNightsCount() }} night(s)</span>
+            <div class="bill-row">
+              <span>Length of Stay</span>
+              <span>{{ getNightsCount() }} night(s)</span>
             </div>
-            <hr class="divider-subtle" />
-            <div class="calc-row total-row">
-              <span class="calc-label font-bold">Estimated Total</span>
-              <span class="calc-val total-amount">₹{{ getTotalAmount() }}</span>
+            <hr class="bill-divider" />
+            <div class="bill-row grand-total-row">
+              <span>Estimated Total</span>
+              <span class="total-price">₹{{ getTotalAmount() }}</span>
             </div>
           </div>
 
-          <button type="submit" class="btn-confirm-booking"
-            [disabled]="bookingForm.invalid || cartService.cartRooms().length === 0">
+          <button type="submit" class="btn-confirm-order" [disabled]="bookingForm.invalid || cartService.cartRooms().length === 0">
             <i class="bi bi-check-circle-fill"></i>
             <span>Confirm Booking</span>
           </button>
         </form>
+
+        <div class="safety-badge">
+          <i class="bi bi-shield-check"></i>
+          <span>Secure checkout. Room bookings will be processed for confirmation.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty Cart Template -->
+  <ng-template #emptyCartTpl>
+    <div class="empty-cart-state">
+      <div class="empty-icon-wrapper">
+        <i class="bi bi-cart-x"></i>
+      </div>
+      <h3>Your Room Cart is Empty</h3>
+      <p>Browse our luxury suites and available rooms to add them to your cart.</p>
+      <a routerLink="/customer/rooms" class="btn-browse-menu">
+        <i class="bi bi-search"></i>
+        <span>Browse Available Rooms</span>
+      </a>
+    </div>
+  </ng-template>
+
+  <!-- ===================== CUSTOM BOOKING CONFIRMATION MODAL ===================== -->
+  <div class="booking-modal-overlay" *ngIf="showConfirmModal" (click)="cancelBooking()">
+    <div class="booking-modal-card" (click)="$event.stopPropagation()">
+      <div class="booking-modal-icon">
+        <i class="bi bi-calendar-check"></i>
+      </div>
+      <h3 class="booking-modal-title">Confirm Booking</h3>
+      <p class="booking-modal-text">Are you sure you want to book {{ cartService.cartRooms().length }} room(s) for {{ getNightsCount() }} night(s)?</p>
+      <div class="booking-modal-actions">
+        <button type="button" class="btn-booking-cancel" (click)="cancelBooking()">Cancel</button>
+        <button type="button" class="btn-booking-confirm" (click)="executeBooking()">Book Now</button>
       </div>
     </div>
   </div>

@@ -1,0 +1,259 @@
+<div class="chef-dashboard-page">
+
+  <!-- ===================== PAGE HEADER ===================== -->
+  <div class="chef-header">
+    <div class="chef-header-left">
+      <h1 class="chef-title">Active Kitchen Orders</h1>
+      <p class="chef-subtitle">Monitor pending orders, start preparations, and mark items ready for delivery.</p>
+    </div>
+    <button class="btn-refresh" (click)="loadOrders()" type="button" title="Refresh Kitchen Orders">
+      <i class="bi bi-arrow-clockwise"></i>
+      <span>Refresh Orders</span>
+    </button>
+  </div>
+
+  <!-- ===================== LOADING SKELETON ===================== -->
+  <div class="chef-skeleton-wrap" *ngIf="loading()">
+    <div class="chef-skeleton-row" *ngFor="let i of [1,2,3]">
+      <div class="sk-id"></div>
+      <div class="sk-lines"><div class="sk-line w40"></div></div>
+      <div class="sk-pill sk-cell"></div>
+      <div class="sk-btn sk-cell text-end"></div>
+    </div>
+  </div>
+
+  <div class="chef-content" *ngIf="!loading()">
+
+    <!-- ===================== 1. PENDING ORDERS SECTION ===================== -->
+    <div class="chef-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-pending"></span>
+          <h2>Pending Kitchen Requests</h2>
+        </div>
+        <span class="section-count-badge badge-pending">{{ getOrdersByStatus('Pending').length }} Orders</span>
+      </div>
+
+      <div class="chef-table-card" *ngIf="getOrdersByStatus('Pending').length > 0; else emptyPending">
+        <div class="table-responsive">
+          <table class="chef-table">
+            <thead>
+              <tr>
+                <th class="th-id">Order ID</th>
+                <th class="th-room">Room</th>
+                <th>Order Details / Items</th>
+                <th>Special Notes / Instructions</th>
+                <th>Ordered At</th>
+                <th class="th-action text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of getOrdersByStatus('Pending')" class="chef-row">
+                <td class="td-id"><span class="order-id-chip">#{{ order.orderId }}</span></td>
+                <td><strong class="room-label-highlight">Room {{ order.roomNumber }}</strong></td>
+                <td>
+                  <div class="order-items-list">
+                    <span class="item-tag" *ngFor="let item of order.items">
+                      {{ item.quantity }} × {{ item.foodName }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="notes-text" [class.no-notes]="!order.specialInstructions">
+                    <i class="bi bi-chat-text-fill" *ngIf="order.specialInstructions"></i>
+                    {{ order.specialInstructions || 'None' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="time-text">
+                    <i class="bi bi-clock"></i>
+                    {{ order.orderDate ? (order.orderDate | date:'dd MMM, h:mm a' : '+0530') : '—' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn-start-prep" [disabled]="processingOrderId() === order.orderId" (click)="openConfirmModal(order, 'start')">
+                    <span *ngIf="processingOrderId() !== order.orderId"><i class="bi bi-fire"></i> Start Prep</span>
+                    <span *ngIf="processingOrderId() === order.orderId" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyPending>
+        <div class="chef-empty-state">
+          <i class="bi bi-check-circle"></i>
+          <p>No pending kitchen orders.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===================== 2. PREPARING ORDERS SECTION ===================== -->
+    <div class="chef-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-preparing"></span>
+          <h2>Active Preparations</h2>
+        </div>
+        <span class="section-count-badge badge-preparing">{{ getOrdersByStatus('Preparing').length }} Active</span>
+      </div>
+
+      <div class="chef-table-card" *ngIf="getOrdersByStatus('Preparing').length > 0; else emptyPreparing">
+        <div class="table-responsive">
+          <table class="chef-table">
+            <thead>
+              <tr>
+                <th class="th-id">Order ID</th>
+                <th class="th-room">Room</th>
+                <th>Order Details / Items</th>
+                <th>Special Notes / Instructions</th>
+                <th>Prep Status</th>
+                <th class="th-action text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of getOrdersByStatus('Preparing')" class="chef-row">
+                <td class="td-id"><span class="order-id-chip">#{{ order.orderId }}</span></td>
+                <td><strong class="room-label-highlight">Room {{ order.roomNumber }}</strong></td>
+                <td>
+                  <div class="order-items-list">
+                    <span class="item-tag item-preparing" *ngFor="let item of order.items">
+                      {{ item.quantity }} × {{ item.foodName }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="notes-text" [class.no-notes]="!order.specialInstructions">
+                    <i class="bi bi-chat-text-fill" *ngIf="order.specialInstructions"></i>
+                    {{ order.specialInstructions || 'None' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge-status-preparing">
+                    <span class="spinner-grow spinner-grow-sm me-1 text-orange" role="status"></span>
+                    Cooking
+                  </span>
+                </td>
+                <td class="text-end">
+                  <button class="btn-mark-ready" [disabled]="processingOrderId() === order.orderId" (click)="openConfirmModal(order, 'ready')">
+                    <span *ngIf="processingOrderId() !== order.orderId"><i class="bi bi-check-circle-fill"></i> Mark Ready</span>
+                    <span *ngIf="processingOrderId() === order.orderId" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyPreparing>
+        <div class="chef-empty-state">
+          <i class="bi bi-egg-fried"></i>
+          <p>No active preparations.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===================== 3. READY ORDERS SECTION ===================== -->
+    <div class="chef-block-section">
+      <div class="section-header-wrap">
+        <div class="section-title-left">
+          <span class="status-dot dot-ready"></span>
+          <h2>Ready for Delivery</h2>
+        </div>
+        <span class="section-count-badge badge-ready">{{ getOrdersByStatus('Ready').length }} Orders</span>
+      </div>
+
+      <div class="chef-table-card" *ngIf="getOrdersByStatus('Ready').length > 0; else emptyReady">
+        <div class="table-responsive">
+          <table class="chef-table">
+            <thead>
+              <tr>
+                <th class="th-id">Order ID</th>
+                <th class="th-room">Room</th>
+                <th>Order Details / Items</th>
+                <th>Special Notes / Instructions</th>
+                <th>Kitchen State</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of getOrdersByStatus('Ready')" class="chef-row">
+                <td class="td-id"><span class="order-id-chip">#{{ order.orderId }}</span></td>
+                <td><strong class="room-label-highlight">Room {{ order.roomNumber }}</strong></td>
+                <td>
+                  <div class="order-items-list">
+                    <span class="item-tag item-ready" *ngFor="let item of order.items">
+                      {{ item.quantity }} × {{ item.foodName }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="notes-text" [class.no-notes]="!order.specialInstructions">
+                    <i class="bi bi-chat-text-fill" *ngIf="order.specialInstructions"></i>
+                    {{ order.specialInstructions || 'None' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge-status-ready"><i class="bi bi-patch-check-fill"></i> Ready</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ng-template #emptyReady>
+        <div class="chef-empty-state">
+          <i class="bi bi-truck"></i>
+          <p>No orders ready for delivery.</p>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============================================================
+     CUSTOM CONFIRMATION MODAL OVERLAY
+     ============================================================ -->
+<div class="confirm-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+  <div class="confirm-modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="confirm-modal-body">
+      
+      <div class="confirm-icon-wrap" [ngClass]="confirmActionType === 'start' ? 'icon-wrap-orange' : confirmActionType === 'deliver' ? 'icon-wrap-blue' : 'icon-wrap-green'">
+        <i class="bi" [ngClass]="confirmActionType === 'start' ? 'bi-fire' : confirmActionType === 'deliver' ? 'bi-bicycle' : 'bi-check-circle-fill'"></i>
+      </div>
+
+      <h3 class="confirm-title">
+        {{ confirmActionType === 'start' ? 'Start Order Preparation?' : confirmActionType === 'deliver' ? 'Confirm Delivery?' : 'Mark Order as Ready?' }}
+      </h3>
+      
+      <p class="confirm-desc">
+        <span *ngIf="confirmActionType === 'start'">
+          You are about to start preparing **Order #{{ confirmTargetOrder?.orderId }}** for **Room {{ confirmTargetOrder?.roomNumber }}**.
+          This will update the order status to **Preparing**.
+        </span>
+        <span *ngIf="confirmActionType === 'ready'">
+          Confirm that all items in **Order #{{ confirmTargetOrder?.orderId }}** are fully prepared and ready for delivery.
+          This will notify the delivery staff.
+        </span>
+        <span *ngIf="confirmActionType === 'deliver'">
+          Confirm that **Order #{{ confirmTargetOrder?.orderId }}** for **Room {{ confirmTargetOrder?.roomNumber }}** has been delivered to the guest.
+          This will mark the order as Delivered and remove it from this list.
+        </span>
+      </p>
+
+    </div>
+
+    <div class="confirm-modal-footer">
+      <button type="button" class="btn-confirm-cancel" (click)="closeConfirmModal()">Cancel</button>
+      <button type="button" class="btn-confirm-proceed" 
+        [ngClass]="confirmActionType === 'start' ? 'btn-proceed-orange' : confirmActionType === 'deliver' ? 'btn-proceed-blue' : 'btn-proceed-green'"
+        (click)="confirmAction()">
+        Confirm & Update
+      </button>
+    </div>
+
+  </div>
+</div>

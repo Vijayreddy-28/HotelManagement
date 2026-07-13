@@ -1,0 +1,163 @@
+<div class="delivery-dashboard-page">
+
+  <!-- ===================== PAGE HEADER ===================== -->
+  <div class="delivery-header">
+    <div>
+      <h1 class="delivery-title"><i class="bi bi-bicycle me-2"></i>Delivery Dashboard</h1>
+      <p class="delivery-subtitle">Manage and complete all food deliveries ready for dispatch</p>
+    </div>
+    <button class="btn-refresh" (click)="loadReadyOrders()" [disabled]="loading()">
+      <i class="bi bi-arrow-clockwise" [class.spin]="loading()"></i>
+      <span>Refresh</span>
+    </button>
+  </div>
+
+  <!-- ===================== LOADING SPINNER ===================== -->
+  <div class="loading-overlay" *ngIf="loading()">
+    <div class="loading-spinner">
+      <div class="spinner-ring"></div>
+      <p>Loading orders…</p>
+    </div>
+  </div>
+
+  <!-- ===================== READY ORDERS TABLE ===================== -->
+  <div class="delivery-block-section" *ngIf="!loading()">
+    <div class="section-header-wrap">
+      <div class="section-title-left">
+        <span class="status-dot dot-ready"></span>
+        <h2>Orders Ready for Delivery</h2>
+      </div>
+      <span class="section-count-badge">{{ readyOrders().length }} Order{{ readyOrders().length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <!-- Table -->
+    <div class="delivery-table-card" *ngIf="readyOrders().length > 0; else emptyState">
+      <div class="table-responsive">
+        <table class="delivery-table">
+          <thead>
+            <tr>
+              <th class="th-id">Order ID</th>
+              <th class="th-room">Room</th>
+              <th>Items</th>
+              <th>Total Items</th>
+              <th>Ordered At</th>
+              <th class="th-status">Kitchen Status</th>
+              <th class="th-action text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of readyOrders()" class="delivery-row">
+
+              <!-- Order ID -->
+              <td class="td-id">
+                <span class="order-id-chip">#{{ order.orderId }}</span>
+              </td>
+
+              <!-- Room -->
+              <td>
+                <div class="room-badge">
+                  <i class="bi bi-door-closed-fill"></i>
+                  Room {{ order.roomNumber }}
+                </div>
+              </td>
+
+              <!-- Items -->
+              <td>
+                <div class="order-items-list">
+                  <span class="item-tag" *ngFor="let item of order.items">
+                    {{ item.quantity }} × {{ item.foodName }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Total Items -->
+              <td>
+                <span class="total-items-badge">{{ getTotalItems(order) }} items</span>
+              </td>
+
+              <!-- Ordered At -->
+              <td>
+                <span class="time-text">
+                  <i class="bi bi-clock-fill"></i>
+                  {{ order.orderDate ? (order.orderDate | date:'dd MMM, h:mm a' : '+0530') : '—' }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="badge-status-ready">
+                  <i class="bi bi-patch-check-fill"></i> Ready
+                </span>
+              </td>
+
+              <!-- Action -->
+              <td class="text-end">
+                <button class="btn-deliver"
+                  [disabled]="processingOrderId() === order.orderId"
+                  (click)="openConfirmModal(order)">
+                  <span *ngIf="processingOrderId() !== order.orderId">
+                    <i class="bi bi-check2-circle"></i> Mark Delivered
+                  </span>
+                  <span *ngIf="processingOrderId() === order.orderId"
+                    class="spinner-border spinner-border-sm">
+                  </span>
+                </button>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <ng-template #emptyState>
+      <div class="delivery-empty-state">
+        <div class="empty-icon-wrap">
+          <i class="bi bi-bicycle"></i>
+        </div>
+        <h3>All Clear!</h3>
+        <p>No orders are ready for delivery right now. Check back soon.</p>
+      </div>
+    </ng-template>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     CONFIRM DELIVERY MODAL OVERLAY
+     ============================================================ -->
+<div class="confirm-modal-overlay" *ngIf="showConfirmModal" (click)="closeConfirmModal()">
+  <div class="confirm-modal-card" (click)="$event.stopPropagation()">
+
+    <div class="confirm-modal-body">
+      <div class="confirm-icon-wrap">
+        <i class="bi bi-bicycle"></i>
+      </div>
+
+      <h3 class="confirm-title">Confirm Delivery?</h3>
+
+      <p class="confirm-desc">
+        Confirm that <strong>Order #{{ confirmTargetOrder?.orderId }}</strong> has been
+        successfully delivered to <strong>Room {{ confirmTargetOrder?.roomNumber }}</strong>.
+        This will mark the order as <strong>Delivered</strong> and remove it from this list.
+      </p>
+
+      <div class="order-summary-box" *ngIf="confirmTargetOrder">
+        <span class="summary-item" *ngFor="let item of confirmTargetOrder?.items">
+          {{ item.quantity }} × {{ item.foodName }}
+        </span>
+      </div>
+    </div>
+
+    <div class="confirm-modal-footer">
+      <button type="button" class="btn-confirm-cancel" (click)="closeConfirmModal()">
+        <i class="bi bi-x-lg"></i> Cancel
+      </button>
+      <button type="button" class="btn-confirm-deliver" (click)="confirmDeliver()">
+        <i class="bi bi-check2-circle"></i> Confirm Delivered
+      </button>
+    </div>
+
+  </div>
+</div>

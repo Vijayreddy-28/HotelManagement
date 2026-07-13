@@ -33,4 +33,16 @@ export class RoomService {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.get(`${this.apiUrl}/summary-cards`, { headers });
   }
+
+  public AddRoom(formData: FormData) {
+    const token = sessionStorage.getItem('token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.http.post(`${this.apiUrl}`, formData, { headers });
+  }
+
+  public DeleteRoom(roomId: number) {
+    const token = sessionStorage.getItem('token');
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    return this.http.delete(`${this.apiUrl}/${roomId}`, { headers });
+  }
 }

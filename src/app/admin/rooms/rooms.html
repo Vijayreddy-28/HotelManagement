@@ -1,0 +1,271 @@
+<div class="rooms-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="rooms-header">
+    <div class="rooms-header-left">
+      <h1 class="rooms-title">Retreat Room Inventory</h1>
+      <p class="rooms-subtitle">Manage retreat room categories, verify statuses, and add new room assets.</p>
+    </div>
+    <button class="btn-add-room" (click)="openAddModal()" id="add-room-btn">
+      <i class="bi bi-plus-circle-fill"></i>
+      <span>Add Room</span>
+    </button>
+  </div>
+
+  <!-- ===== STATS / FILTER ROW ===== -->
+  <div class="rooms-stats-row">
+    <div class="rooms-stat-card" *ngFor="let tab of statusTabs" (click)="setFilter(tab)"
+      [class.rooms-stat-active]="activeFilter() === tab">
+      <div class="stat-icon-wrap" [ngClass]="{
+        'icon-navy': tab === 'All',
+        'icon-green': tab === 'Available',
+        'icon-blue': tab === 'Occupied',
+        'icon-amber': tab === 'Cleaning',
+        'icon-red': tab === 'Dirty'
+      }">
+        <i class="bi" [ngClass]="{
+          'bi-door-open-fill': tab === 'All',
+          'bi-check-circle-fill': tab === 'Available',
+          'bi-people-fill': tab === 'Occupied',
+          'bi-stars': tab === 'Cleaning',
+          'bi-exclamation-triangle-fill': tab === 'Dirty'
+        }"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">{{ tab }}</span>
+        <span class="stat-value">{{ getStatusCount(tab) }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeFilter() === tab"></div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="rooms-search-card">
+    <div class="rooms-search-inner">
+      <i class="bi bi-search rooms-search-icon"></i>
+      <input type="text" class="rooms-search-input" placeholder="Search by room number, type, or status..."
+        [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" id="room-search" />
+      <button class="rooms-clear-btn" *ngIf="searchText()" (click)="searchText.set('')" type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="rooms-skeleton-grid" *ngIf="loading()">
+    <div class="rooms-skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="sk-header-row">
+        <div class="sk-pill w40"></div>
+        <div class="sk-dot"></div>
+      </div>
+      <div class="sk-line w60"></div>
+      <div class="sk-line w30"></div>
+      <div class="sk-footer">
+        <div class="sk-line w40"></div>
+        <div class="sk-pill w30"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ROOMS GRID ===== -->
+  <div class="rooms-grid" *ngIf="!loading() && filteredRooms().length > 0">
+    <div class="room-card" *ngFor="let room of paginatedRooms" [class.room-deactive]="!room.isActive"
+      [ngClass]="getCardBorderClass(room.status)">
+
+      <!-- Card Body -->
+      <div class="room-card-body">
+        <div class="room-card-top">
+          <span class="room-number">Room {{ room.roomNumber }}</span>
+          <span class="status-indicator-dot" [ngClass]="{
+            'bg-success': room.status === 'Available',
+            'bg-primary': room.status === 'Occupied',
+            'bg-warning': room.status === 'Cleaning',
+            'bg-danger': room.status === 'Dirty'
+          }"></span>
+        </div>
+
+        <div class="room-card-middle">
+          <h4 class="room-type">{{ room.typeName }}</h4>
+          <div class="room-features">
+            <span class="feature-tag" title="Max Occupancy">
+              <i class="bi bi-people-fill"></i>
+              <span>{{ room.maxOccupancy }} Max</span>
+            </span>
+            <span class="feature-tag" title="Floor Level">
+              <i class="bi bi-building"></i>
+              <span>Lvl {{ room.floor }}</span>
+            </span>
+            <span class="feature-tag" title="Beds">
+              <i class="bi bi-door-closed"></i>
+              <span>{{ room.noOfBeds }} Beds</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="room-card-bottom">
+          <div class="price-section">
+            <span class="price-value">₹{{ room.pricePerNight | number }}</span>
+            <span class="price-label">/ night</span>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusBadgeClass(room.status)">
+            {{ room.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Card Action (Deactivate) -->
+      <div class="room-card-footer" *ngIf="room.isActive">
+        <button class="btn-deactivate" (click)="deactivateRoom(room)">
+          <i class="bi bi-trash3-fill"></i>
+          <span>Deactivate Room</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== Pagination ===== -->
+  <div class="rooms-pagination" *ngIf="!loading() && filteredRooms().length > pageSize">
+    <span class="pagination-info">
+      Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>–<strong>{{ currentPage * pageSize >
+        filteredRooms().length ? filteredRooms().length : currentPage * pageSize }}</strong>
+      of <strong>{{ filteredRooms().length }}</strong> rooms
+    </span>
+    <div class="pagination-controls">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="page-label">{{ currentPage }} / {{ totalPages }}</span>
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== EMPTY STATE ===== -->
+  <div class="rooms-empty" *ngIf="!loading() && filteredRooms().length === 0">
+    <div class="rooms-empty-icon"><i class="bi bi-door-closed"></i></div>
+    <h4>No Rooms Found</h4>
+    <p>No rooms match the selected filter or search term. Try adding a new room asset.</p>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     ADD ROOM MODAL
+     ============================================================ -->
+<div class="room-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="room-modal-card" (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="room-modal-header">
+      <div class="room-modal-title-row">
+        <div class="room-modal-icon"><i class="bi bi-plus-circle-fill"></i></div>
+        <div>
+          <h2 class="room-modal-title">Add New Room</h2>
+          <p class="room-modal-subtitle">Add a room asset to the retreat inventory</p>
+        </div>
+      </div>
+      <button class="room-close-btn" (click)="closeAddModal()" type="button" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Form -->
+    <form [formGroup]="addForm" (ngSubmit)="submitRoom()">
+      <div class="room-modal-body">
+        <div class="room-form-grid">
+
+          <!-- Room Type -->
+          <div class="room-field">
+            <label class="room-label">Room Type</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-bookmark-fill room-input-icon"></i>
+              <input type="text" class="room-input" formControlName="typeName" placeholder="e.g. Deluxe Room" />
+            </div>
+            <span class="room-error" *ngIf="addForm.get('typeName')?.touched && addForm.get('typeName')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Room type is required.
+            </span>
+          </div>
+
+          <!-- Floor -->
+          <div class="room-field">
+            <label class="room-label">Floor</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-building room-input-icon"></i>
+              <input type="number" class="room-input" formControlName="floor" placeholder="e.g. 1" />
+            </div>
+            <span class="room-error" *ngIf="addForm.get('floor')?.touched && addForm.get('floor')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Valid floor level required.
+            </span>
+          </div>
+
+          <!-- Price Per Night -->
+          <div class="room-field">
+            <label class="room-label">Price Per Night (₹)</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-currency-rupee room-input-icon"></i>
+              <input type="number" class="room-input" formControlName="pricePerNight" placeholder="e.g. 3500" />
+            </div>
+            <span class="room-error"
+              *ngIf="addForm.get('pricePerNight')?.touched && addForm.get('pricePerNight')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Price must be at least ₹1.
+            </span>
+          </div>
+
+          <!-- Bed Type -->
+          <div class="room-field">
+            <label class="room-label">Bed Type</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-door-closed room-input-icon"></i>
+              <select class="room-input room-select" formControlName="bedType">
+                <option value="King">King Bed</option>
+                <option value="Queen">Queen Bed</option>
+                <option value="Double">Double Bed</option>
+                <option value="Single">Single Bed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Number of Beds -->
+          <div class="room-field">
+            <label class="room-label">Number of Beds</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-bricks room-input-icon"></i>
+              <input type="number" class="room-input" formControlName="noOfBeds" placeholder="e.g. 1" />
+            </div>
+            <span class="room-error" *ngIf="addForm.get('noOfBeds')?.touched && addForm.get('noOfBeds')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Minimum 1 bed required.
+            </span>
+          </div>
+
+          <!-- Max Occupancy -->
+          <div class="room-field">
+            <label class="room-label">Max Occupancy (Guests)</label>
+            <div class="room-input-wrap">
+              <i class="bi bi-people room-input-icon"></i>
+              <input type="number" class="room-input" formControlName="maxOccupancy" placeholder="e.g. 2" />
+            </div>
+            <span class="room-error"
+              *ngIf="addForm.get('maxOccupancy')?.touched && addForm.get('maxOccupancy')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Minimum 1 guest occupancy required.
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="room-modal-footer">
+        <button type="button" class="btn-room-cancel" (click)="closeAddModal()">Cancel</button>
+        <button type="submit" class="btn-room-submit" [disabled]="submittingRoom" id="submit-room-btn">
+          <span *ngIf="!submittingRoom">
+            <i class="bi bi-plus-circle-fill me-2"></i>Add Room
+          </span>
+          <span *ngIf="submittingRoom" class="spinner-border spinner-border-sm"></span>
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

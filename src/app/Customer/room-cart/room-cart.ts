@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CartService } from '../../../services/cart.service';
 import { RoomBookingService } from '../../../services/roombooking.service';
 import { RoomBooking } from '../../../models/roombooking.model';
-import Swal from 'sweetalert2';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-room-cart',
@@ -16,12 +16,15 @@ import Swal from 'sweetalert2';
 })
 export class RoomCartComponent implements OnInit {
   bookingForm!: FormGroup;
+  showConfirmModal = false;
+  pendingBookingRequest: RoomBooking | null = null;
 
   constructor(
     public cartService: CartService,
     private roomBookingService: RoomBookingService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) { }
 
   ngOnInit() {
@@ -73,34 +76,19 @@ export class RoomCartComponent implements OnInit {
   confirmBooking() {
     if (this.bookingForm.invalid) {
       this.bookingForm.markAllAsTouched();
-      Swal.fire({
-        icon: 'error',
-        title: 'Invalid Details',
-        text: 'Please check that all booking dates and guest details are valid.',
-        confirmButtonColor: '#2563eb',
-      });
+      this.toastr.error('Please check that all booking dates and guest details are valid.', 'Invalid Details');
       return;
     }
 
     const rooms = this.cartService.cartRooms();
     if (rooms.length === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Empty Cart',
-        text: 'Please add at least one room to your cart before booking.',
-        confirmButtonColor: '#2563eb',
-      });
+      this.toastr.warning('Please add at least one room to your cart before booking.', 'Empty Cart');
       return;
     }
 
     const nights = this.getNightsCount();
     if (nights <= 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Invalid Dates',
-        text: 'Check-out date must be after the check-in date.',
-        confirmButtonColor: '#2563eb',
-      });
+      this.toastr.warning('Check-out date must be after the check-in date.', 'Invalid Dates');
       return;
     }
 
@@ -109,68 +97,39 @@ export class RoomCartComponent implements OnInit {
     const numberOfGuests = parseInt(this.bookingForm.value.numberOfGuests, 10);
     const roomIds = rooms.map(r => r.roomId);
 
-    const bookingRequest = new RoomBooking(
+    this.pendingBookingRequest = new RoomBooking(
       checkIn,
       checkOut,
       numberOfGuests,
       roomIds
     );
 
-    Swal.fire({
-      title: 'Confirm Booking',
-      text: `Are you sure you want to book ${rooms.length} room(s) for ${nights} night(s)?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Confirm Booking',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#2563eb',
-      cancelButtonColor: '#64748b',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: 'Processing...',
-          text: 'Placing your room booking',
-          timer: 2000,
-          timerProgressBar: true,
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          }
-        });
+    this.showConfirmModal = true;
+  }
 
-        this.roomBookingService.roomBookingCall(bookingRequest).subscribe({
-          next: (response: any) => {
-            if (Number(response.statusCode) == 400 || Number(response.statusCode) == 401) {
-              Swal.fire({
-                icon: 'error',
-                title: 'Booking Failed',
-                text: response.message || 'An error occurred while placing your booking. Please try again.',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#2563eb',
-              });
-              return;
-            }
-            Swal.fire({
-              icon: 'success',
-              title: 'Booking Confirmed!',
-              text: response.message || 'Your room booking has been successfully processed.',
-              confirmButtonText: 'Great!',
-              confirmButtonColor: '#2563eb',
-            }).then(() => {
-              this.cartService.clearCart();
-              this.router.navigate(['/customer/rooms']);
-            });
-          },
-          error: (err: any) => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Booking Failed',
-              text: err.error?.message || err.message || 'An error occurred while placing your booking. Please try again.',
-              confirmButtonText: 'OK',
-              confirmButtonColor: '#2563eb',
-            });
-          }
-        });
+  cancelBooking() {
+    this.showConfirmModal = false;
+    this.pendingBookingRequest = null;
+  }
+
+  executeBooking() {
+    if (!this.pendingBookingRequest) return;
+    this.showConfirmModal = false;
+
+    this.toastr.info('Placing your room booking...', 'Processing');
+
+    this.roomBookingService.roomBookingCall(this.pendingBookingRequest).subscribe({
+      next: (response: any) => {
+        if (Number(response.statusCode) == 400 || Number(response.statusCode) == 401) {
+          this.toastr.error(response.message || 'An error occurred while placing your booking. Please try again.', 'Booking Failed');
+          return;
+        }
+        this.toastr.success(response.message || 'Your room booking has been successfully processed.', 'Booking Confirmed!');
+        this.cartService.clearCart();
+        this.router.navigate(['/customer/rooms']);
+      },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.message || 'An error occurred while placing your booking. Please try again.', 'Booking Failed');
       }
     });
   }

@@ -1,343 +1,371 @@
-<div class="bookings-container container-fluid py-4">
-  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-    <div>
-      <h2 class="page-title text-dark fw-bold mb-1">
-        <i class="bi bi-display text-primary me-2"></i>Front Desk Operations
-      </h2>
-      <p class="page-subtitle text-muted mb-0">Live property management console for seamless guest coordination.</p>
+<div class="bookings-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="bk-header">
+    <div class="bk-header-left">
+      <h1 class="bk-title">Front Desk Operations</h1>
+      <p class="bk-subtitle">Live property management console for check-ins, check-outs, and directory services.</p>
     </div>
   </div>
 
-  <div class="card border-0 shadow-sm mb-4 bg-white rounded-3">
-    <div class="card-body p-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <div class="nav nav-pills gap-1" role="tablist">
-        <button class="nav-link tab-btn px-4 py-2.5 d-flex align-items-center gap-2 fw-semibold"
-          [class.active]="activeTab() === 'checkin'" (click)="setTab('checkin')">
-          <i class="bi bi-door-open-fill"></i>
-          Arrivals & Check-In
-        </button>
-        <button class="nav-link tab-btn px-4 py-2.5 d-flex align-items-center gap-2 fw-semibold"
-          [class.active]="activeTab() === 'checkout'" (click)="setTab('checkout')">
-          <i class="bi bi-box-arrow-right"></i>
-          Departures & Check-Out
-        </button>
-        <button class="nav-link tab-btn px-4 py-2.5 d-flex align-items-center gap-2 fw-semibold"
-          [class.active]="activeTab() === 'guest'" (click)="setTab('guest') ">
-          <i class="bi bi-people-fill"></i>
-          In-House Guest Directory
-        </button>
-      </div>
+  <!-- ===== TABS SELECTOR (MATCHING STATS ROW) ===== -->
+  <div class="bk-stats-row">
 
-      <div *ngIf="activeTab() !== 'guest'" class="search-panel" style="min-width: 340px;">
-        <div class="input-group group-clean">
-          <span class="input-group-text border-end-0">
-            <i class="bi bi-search text-muted"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 ps-0" placeholder="Search by ID or Customer Name..."
-            [(ngModel)]="searchText">
+    <!-- Arrivals Tab -->
+    <div class="bk-stat-card" (click)="setTab('checkin')" [class.bk-stat-active]="activeTab() === 'checkin'">
+      <div class="stat-icon-wrap icon-blue">
+        <i class="bi bi-door-open-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Arrivals & Check-In</span>
+        <span class="stat-value">{{ totalCheckInsCount() }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeTab() === 'checkin'"></div>
+    </div>
+
+    <!-- Departures Tab -->
+    <div class="bk-stat-card" (click)="setTab('checkout')" [class.bk-stat-active]="activeTab() === 'checkout'">
+      <div class="stat-icon-wrap icon-amber">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Departures & Check-Out</span>
+        <span class="stat-value">{{ totalCheckOutsCount() }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeTab() === 'checkout'"></div>
+    </div>
+
+    <!-- Guest Directory Tab -->
+    <div class="bk-stat-card" (click)="setTab('guest')" [class.bk-stat-active]="activeTab() === 'guest'">
+      <div class="stat-icon-wrap icon-teal">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">In-House Directory</span>
+        <span class="stat-value">{{ totalGuestsCount() }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeTab() === 'guest'"></div>
+    </div>
+
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="bk-search-card">
+    <div class="bk-search-inner" *ngIf="activeTab() !== 'guest'">
+      <i class="bi bi-search bk-search-icon"></i>
+      <input type="text" class="bk-search-input" placeholder="Search by booking ID or customer name..."
+        [(ngModel)]="searchText" (ngModelChange)="checkInPage = 1; checkOutPage = 1;" />
+      <button class="bk-clear-btn" *ngIf="searchText" (click)="searchText=''; checkInPage = 1; checkOutPage = 1;"
+        type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+
+    <div class="bk-search-inner" *ngIf="activeTab() === 'guest'">
+      <i class="bi bi-search bk-search-icon"></i>
+      <input type="text" class="bk-search-input" placeholder="Filter by Room, Name, Phone, Aadhaar..."
+        [(ngModel)]="guestSearchText" (ngModelChange)="guestPage = 1;" />
+      <button class="bk-clear-btn" *ngIf="guestSearchText" (click)="guestSearchText=''; guestPage = 1;" type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="bk-skeleton-grid" *ngIf="loading()">
+    <div class="bk-skeleton-card" *ngFor="let i of [1,2,3,4]">
+      <div class="sk-top">
+        <div class="sk-pill w30"></div>
+        <div class="sk-pill w20"></div>
+      </div>
+      <div class="sk-avatar-row mt-3">
+        <div class="sk-circle"></div>
+        <div class="sk-lines">
+          <div class="sk-line w60"></div>
+          <div class="sk-line w40 mt-2"></div>
         </div>
       </div>
-
-      <div *ngIf="activeTab() === 'guest'" class="search-panel" style="min-width: 340px;">
-        <div class="input-group group-clean">
-          <span class="input-group-text border-end-0">
-            <i class="bi bi-search text-muted"></i>
-          </span>
-          <input type="text" class="form-control border-start-0 ps-0"
-            placeholder="Filter by Room, Name, Phone, Aadhaar..." [(ngModel)]="guestSearchText">
-        </div>
+      <div class="sk-strip mt-3">
+        <div class="sk-line w100"></div>
+        <div class="sk-line w80 mt-2"></div>
+      </div>
+      <div class="sk-footer mt-3">
+        <div class="sk-line w40"></div>
+        <div class="sk-line w30"></div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="activeTab() === 'checkin'">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <span class="text-secondary fw-semibold small text-uppercase tracking-wider">Expected Today</span>
-      <span class="badge count-badge bg-primary-subtle text-primary fw-bold">
-        {{ filteredCheckIns().length }} Arrivals Remaining
-      </span>
+  <!-- ===== ARRIVALS (CHECK-IN) TAB CONTENT ===== -->
+  <div *ngIf="!loading() && activeTab() === 'checkin'">
+    <div class="section-meta-header mb-3">
+      <span class="meta-title">Expected Today</span>
+      <span class="panel-badge badge-green">{{ totalCheckInsCount() }} Arrivals Remaining</span>
     </div>
 
-    <div class="row g-3" *ngIf="filteredCheckIns().length > 0; else emptyArrivals">
-      <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let booking of filteredCheckIns()">
-        <div class="card live-card card-arrival h-100 border-0">
-          <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <span class="ref-tag">#{{ booking.bookingId }}</span>
-              <span class="badge live-status-badge status-confirmed">
-                <span class="pulse-indicator bg-success"></span>{{ booking.status }}
-              </span>
-            </div>
+    <div class="bk-grid" *ngIf="filteredCheckIns().length > 0; else emptyArrivals">
+      <div class="bk-card card-arrival" *ngFor="let booking of paginatedCheckIns()">
+        <div class="card-top">
+          <span class="bk-id-chip">#{{ booking.bookingId }}</span>
+          <span class="badge badge-green">{{ booking.status }}</span>
+        </div>
 
-            <div class="d-flex align-items-center mb-3">
-              <div class="avatar-circle av-arrival">
-                {{ booking.customerName.charAt(0).toUpperCase() }}
-              </div>
-              <div class="ms-2.5 min-w-0">
-                <h6 class="guest-title mb-0 text-truncate">{{ booking.customerName }}</h6>
-                <small class="text-muted fs-7"><i class="bi bi-clock me-1"></i>Standard Check-in</small>
-              </div>
-            </div>
-
-            <div class="meta-strip p-2.5 rounded-2 mb-3">
-              <div class="d-flex justify-content-between mb-1.5">
-                <span class="label-text">Room Preference</span>
-                <span class="val-text fw-bold text-dark">
-                  <i class="bi bi-door-closed text-primary me-1"></i> {{ bookingRoomsMap.get(booking.bookingId) ||
-                  'Assigned' }}
-                </span>
-              </div>
-              <div class="d-flex justify-content-between">
-                <span class="label-text">Arr. Date</span>
-                <span class="val-text">{{ booking.checkInDate }}</span>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center pt-1 mb-3">
-              <span class="label-text">Total Price</span>
-              <span class="price-text text-success fw-bold">₹{{ booking.totalAmount | number }}</span>
-            </div>
-
-            <div class="card-actions d-flex gap-2">
-              <button class="btn btn-action btn-primary flex-fill" (click)="checkIn(booking.bookingId)"
-                style="background:linear-gradient(135deg,rgb(41, 179, 103),green);">
-                <i class="bi bi-box-arrow-in-right me-1.5" style="padding-right: 10px;"></i>Check In
-              </button>
-              <button class="btn btn-action btn-icon btn-outline-light-dark" (click)="viewDetails(booking)"
-                title="Details">
-                <i class="bi bi-eye"></i>
-              </button>
-              <button class="btn btn-action btn-icon btn-outline-danger-subtle"
-                (click)="cancelBooking(booking.bookingId)" title="Cancel">
-                <i class="bi bi-x-circle"></i>
-              </button>
-            </div>
+        <div class="guest-profile mt-3">
+          <div class="guest-avatar av-arrival">{{ booking.customerName.charAt(0).toUpperCase() }}</div>
+          <div class="guest-details">
+            <span class="guest-name">{{ booking.customerName }}</span>
+            <span class="guest-sub"><i class="bi bi-clock me-1"></i>Standard check-in</span>
           </div>
         </div>
+
+        <div class="meta-strip mt-3">
+          <div class="meta-row">
+            <span class="meta-label">Preference</span>
+            <span class="meta-val"><i class="bi bi-door-closed text-primary me-1"></i>{{
+              bookingRoomsMap().get(booking.bookingId) || 'Assigned' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Arrival Date</span>
+            <span class="meta-val">{{ booking.checkInDate }}</span>
+          </div>
+        </div>
+
+        <div class="price-row mt-3">
+          <span class="price-label">Total Amount</span>
+          <span class="price-val">₹{{ booking.totalAmount | number }}</span>
+        </div>
+
+        <div class="card-actions mt-3">
+          <button class="btn btn-action btn-success flex-fill" (click)="checkIn(booking.bookingId)">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Check In
+          </button>
+          <button class="btn btn-icon-only" (click)="viewDetails(booking)" title="Details">
+            <i class="bi bi-eye"></i>
+          </button>
+          <button class="btn btn-icon-only btn-danger-text" (click)="cancelBooking(booking.bookingId)" title="Cancel">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination for Check-Ins -->
+    <div *ngIf="totalCheckInsCount() > checkInPageSize" class="bk-pagination-card mt-4">
+      <span class="pagination-meta">
+        Showing <strong>{{ (checkInPage - 1) * checkInPageSize + 1 }}</strong>-<strong>{{ (checkInPage *
+          checkInPageSize) > totalCheckInsCount() ? totalCheckInsCount() : (checkInPage * checkInPageSize) }}</strong>
+        of <strong>{{ totalCheckInsCount() }}</strong>
+      </span>
+      <div class="pagination-controls">
+        <button class="pagination-btn" [disabled]="checkInPage === 1" (click)="prevCheckInPage()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <span class="page-indicator">Page {{ checkInPage }}/{{ totalCheckInPages() }}</span>
+        <button class="pagination-btn" [disabled]="checkInPage === totalCheckInPages()" (click)="nextCheckInPage()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
     </div>
 
     <ng-template #emptyArrivals>
-      <div class="text-center bg-white border rounded-3 py-5 shadow-sm">
-        <i class="bi bi-check2-circle text-success display-5"></i>
-        <h5 class="mt-3 text-dark fw-bold">All Arrivals Cleared</h5>
-        <p class="text-muted small mb-0">No pending scheduled checking processes remaining for today.</p>
+      <div class="empty-state-panel">
+        <i class="bi bi-check2-circle text-success"></i>
+        <h5>All Arrivals Cleared</h5>
+        <p>No pending arrivals scheduled for today.</p>
       </div>
     </ng-template>
   </div>
 
-  <div *ngIf="activeTab() === 'checkout'">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <span class="text-secondary fw-semibold small text-uppercase tracking-wider">Departures Pipeline</span>
-      <span class="badge count-badge bg-danger-subtle text-danger fw-bold">
-        {{ filteredCheckOuts().length }} Departures Remaining
-      </span>
+  <!-- ===== DEPARTURES (CHECK-OUT) TAB CONTENT ===== -->
+  <div *ngIf="!loading() && activeTab() === 'checkout'">
+    <div class="section-meta-header mb-3">
+      <span class="meta-title">Departures Pipeline</span>
+      <span class="panel-badge badge-red">{{ totalCheckOutsCount() }} Departures Remaining</span>
     </div>
 
-    <div class="row g-3" *ngIf="filteredCheckOuts().length > 0; else emptyDepartures">
-      <div class="col-xl-3 col-lg-4 col-md-6" *ngFor="let booking of filteredCheckOuts()">
-        <div class="card live-card card-departure h-100 border-0">
-          <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <span class="ref-tag text-danger bg-danger-subtle border-0">#{{ booking.bookingId }}</span>
-              <span class="badge live-status-badge status-checkout">
-                <span class="pulse-indicator bg-warning"></span>In-House
-              </span>
-            </div>
+    <div class="bk-grid" *ngIf="filteredCheckOuts().length > 0; else emptyDepartures">
+      <div class="bk-card card-departure" *ngFor="let booking of paginatedCheckOuts()">
+        <div class="card-top">
+          <span class="bk-id-chip text-danger bg-danger-subtle">#{{ booking.bookingId }}</span>
+          <span class="badge badge-amber">In-House</span>
+        </div>
 
-            <div class="d-flex align-items-center mb-3">
-              <div class="avatar-circle av-departure">
-                {{ booking.customerName.charAt(0).toUpperCase() }}
-              </div>
-              <div class="ms-2.5 min-w-0">
-                <h6 class="guest-title mb-0 text-truncate">{{ booking.customerName }}</h6>
-                <small class="text-danger-emphasis fs-7 fw-medium"><i class="bi bi-exclamation-circle me-1"></i>Due Out
-                  Today</small>
-              </div>
-            </div>
-
-            <div class="meta-strip p-2.5 rounded-2 mb-3">
-              <div class="d-flex justify-content-between mb-1.5">
-                <span class="label-text">Assigned Room</span>
-                <span class="badge bg-dark text-white font-monospace px-2 fs-7">
-                  Rm {{ bookingRoomsMap.get(booking.bookingId) || 'N/A' }}
-                </span>
-              </div>
-              <div class="d-flex justify-content-between">
-                <span class="label-text">Checkout Date</span>
-                <span class="val-text text-danger-emphasis fw-medium">{{ booking.checkOutDate }}</span>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center pt-1 mb-3">
-              <span class="label-text">Folio Balance</span>
-              <span class="price-text text-dark fw-bold">₹{{ booking.totalAmount | number }}</span>
-            </div>
-
-            <div class="card-actions d-flex gap-2">
-              <button class="btn btn-action btn-danger flex-fill" (click)="checkOut(booking.bookingId)">
-                <i class="bi bi-receipt-cutoff me-1.5"></i>Settle & Out
-              </button>
-              <button class="btn btn-action btn-outline-primary px-2.5" (click)="openExtendModal(booking.bookingId)">
-                <i class="bi bi-calendar-plus"></i> Extend
-              </button>
-              <button class="btn btn-action btn-icon btn-outline-light-dark" (click)="viewDetails(booking)">
-                <i class="bi bi-eye"></i>
-              </button>
-            </div>
+        <div class="guest-profile mt-3">
+          <div class="guest-avatar av-departure">{{ booking.customerName.charAt(0).toUpperCase() }}</div>
+          <div class="guest-details">
+            <span class="guest-name">{{ booking.customerName }}</span>
+            <span class="guest-sub text-danger"><i class="bi bi-exclamation-circle me-1"></i>Due Out Today</span>
           </div>
+        </div>
+
+        <div class="meta-strip mt-3">
+          <div class="meta-row">
+            <span class="meta-label">Assigned Room</span>
+            <span class="badge bg-dark text-white px-2 py-0.5" style="border-radius: 4px; font-size: 0.72rem;">Rm {{
+              bookingRoomsMap().get(booking.bookingId) || 'N/A' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Checkout Date</span>
+            <span class="meta-val text-danger fw-bold">{{ booking.checkOutDate }}</span>
+          </div>
+        </div>
+
+        <div class="price-row mt-3">
+          <span class="price-label">Folio Balance</span>
+          <span class="price-val">₹{{ booking.totalAmount | number }}</span>
+        </div>
+
+        <div class="card-actions mt-3">
+          <button class="btn btn-action btn-danger flex-fill" (click)="goToBilling()">
+            <i class="bi bi-receipt-cutoff me-1"></i>Checkout
+          </button>
+          <button class="btn btn-icon-only" (click)="openExtendModal(booking.bookingId)" title="Extend Stay">
+            <i class="bi bi-calendar-plus"></i>
+          </button>
+          <button class="btn btn-icon-only" (click)="viewDetails(booking)" title="Details">
+            <i class="bi bi-eye"></i>
+          </button>
         </div>
       </div>
     </div>
 
+    <!-- Pagination for Check-Outs -->
+    <div *ngIf="totalCheckOutsCount() > checkOutPageSize" class="bk-pagination-card mt-4">
+      <span class="pagination-meta">
+        Showing <strong>{{ (checkOutPage - 1) * checkOutPageSize + 1 }}</strong>-<strong>{{ (checkOutPage *
+          checkOutPageSize) > totalCheckOutsCount() ? totalCheckOutsCount() : (checkOutPage * checkOutPageSize)
+          }}</strong> of <strong>{{ totalCheckOutsCount() }}</strong>
+      </span>
+      <div class="pagination-controls">
+        <button class="pagination-btn" [disabled]="checkOutPage === 1" (click)="prevCheckOutPage()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <span class="page-indicator">Page {{ checkOutPage }}/{{ totalCheckOutPages() }}</span>
+        <button class="pagination-btn" [disabled]="checkOutPage === totalCheckOutPages()" (click)="nextCheckOutPage()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+
     <ng-template #emptyDepartures>
-      <div class="text-center bg-white border rounded-3 py-5 shadow-sm">
-        <i class="bi bi-door-closed-fill text-muted display-5"></i>
-        <h5 class="mt-3 text-secondary fw-bold">No Pending Departures</h5>
-        <p class="text-muted small mb-0">All departures for today have been fully processed and checked out.</p>
+      <div class="empty-state-panel">
+        <i class="bi bi-door-closed-fill text-muted"></i>
+        <h5>No Pending Departures</h5>
+        <p>All departures for today have been fully processed.</p>
       </div>
     </ng-template>
   </div>
 
-  <div *ngIf="activeTab() === 'guest'">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <span class="text-secondary fw-semibold small text-uppercase tracking-wider">In-House Directory</span>
-      <span class="badge count-badge bg-info-subtle text-info fw-bold">
-        {{ enrichedGuests().length }} Active Occupants
-      </span>
+  <!-- ===== GUEST DIRECTORY TAB CONTENT ===== -->
+  <div *ngIf="!loading() && activeTab() === 'guest'">
+    <div class="section-meta-header mb-3">
+      <span class="meta-title">Active Occupants</span>
+      <span class="panel-badge badge-teal">{{ totalGuestsCount() }} In-House Guests</span>
     </div>
 
-    <div class="row g-3" *ngIf="paginatedGuests().length > 0; else emptyGuests">
-      <div class="col-xl-4 col-md-6" *ngFor="let guest of paginatedGuests()">
-        <div class="card live-card card-directory h-100 border-0">
-          <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="badge bg-light text-dark font-monospace border px-2.5 py-1 fs-7 fw-bold">
-                <i class="bi bi-door-open-fill text-info me-1"></i>ROOM {{ guest.roomNumber }}
-              </span>
-              <span class="ref-tag m-0 text-muted bg-light">#{{ guest.bookingId }}</span>
-            </div>
+    <div class="bk-grid" *ngIf="paginatedGuests().length > 0; else emptyGuests">
+      <div class="bk-card card-directory" *ngFor="let guest of paginatedGuests()">
+        <div class="card-top">
+          <span class="badge bg-light text-dark border px-2 py-0.5" style="border-radius: 4px; font-size: 0.72rem;">
+            <i class="bi bi-door-open-fill text-info me-1"></i>Room {{ guest.roomNumber }}
+          </span>
+          <span class="bk-id-chip text-muted">#{{ guest.bookingId }}</span>
+        </div>
 
-            <div class="d-flex align-items-center mb-3 border-bottom pb-2.5">
-              <div class="avatar-circle av-guest">
-                {{ guest.customerName.charAt(0).toUpperCase() }}
-              </div>
-              <div class="ms-2.5 min-w-0">
-                <h6 class="guest-title mb-0 text-truncate">{{ guest.customerName }}</h6>
-                <small class="text-muted fs-7 font-monospace">ID: {{ guest.adhaarNumber || 'Missing' }}</small>
-              </div>
-            </div>
-
-            <div class="row g-2 mb-3">
-              <div class="col-12">
-                <div class="contact-pill"><i class="bi bi-telephone me-2"></i>{{ guest.phone }}</div>
-              </div>
-              <div class="col-12">
-                <div class="contact-pill text-truncate" title="{{ guest.email }}"><i class="bi bi-envelope me-2"></i>{{
-                  guest.email }}</div>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center rounded-2 bg-light p-2 mb-3 fs-7">
-              <div>
-                <span class="text-muted block-display d-block">Check In</span>
-                <span class="text-success fw-bold">{{ guest.checkInDate }}</span>
-              </div>
-              <div class="text-muted px-2"><i class="bi bi-arrow-right"></i></div>
-              <div class="text-end">
-                <span class="text-muted block-display d-block">Check Out</span>
-                <span class="text-danger fw-bold">{{ guest.checkOutDate }}</span>
-              </div>
-            </div>
-
-            <div class="card-actions d-flex gap-2 pt-1">
-              <button class="btn btn-action btn-outline-primary flex-fill" (click)="openExtendModal(guest.bookingId)">
-                <i class="bi bi-calendar-plus me-1"></i>Extend Stay
-              </button>
-              <button class="btn btn-action btn-outline-secondary flex-fill" (click)="viewDetails(guest)">
-                <i class="bi bi-info-circle me-1"></i>Profile Detail
-              </button>
-            </div>
+        <div class="guest-profile mt-3">
+          <div class="guest-avatar av-guest">{{ guest.customerName.charAt(0).toUpperCase() }}</div>
+          <div class="guest-details">
+            <span class="guest-name">{{ guest.customerName }}</span>
+            <span class="guest-sub">ID: {{ guest.adhaarNumber || 'Missing Aadhaar' }}</span>
           </div>
+        </div>
+
+        <div class="meta-strip mt-3" style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 6px;">
+          <div class="d-flex align-items-center gap-2"><i class="bi bi-telephone text-muted"></i>{{ guest.phone }}</div>
+          <div class="d-flex align-items-center gap-2 text-truncate" title="{{ guest.email }}"><i
+              class="bi bi-envelope text-muted"></i>{{ guest.email }}</div>
+        </div>
+
+        <div class="meta-strip mt-3" style="background-color: #f8fafc; padding: 10px; border-radius: 8px;">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="meta-label">Check In</span>
+            <span class="text-success fw-bold" style="font-size: 0.78rem;">{{ guest.checkInDate }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="meta-label">Check Out</span>
+            <span class="text-danger fw-bold" style="font-size: 0.78rem;">{{ guest.checkOutDate }}</span>
+          </div>
+        </div>
+
+        <div class="card-actions mt-3">
+          <button class="btn btn-action btn-outline-primary flex-fill" (click)="openExtendModal(guest.bookingId)">
+            <i class="bi bi-calendar-plus me-1"></i>Extend Stay
+          </button>
+          <button class="btn btn-action btn-outline-secondary flex-fill" (click)="viewDetails(guest)">
+            <i class="bi bi-info-circle me-1"></i>Details
+          </button>
         </div>
       </div>
     </div>
 
     <ng-template #emptyGuests>
-      <div class="text-center bg-white border rounded-3 py-5 shadow-sm">
-        <i class="bi bi-people text-muted display-5"></i>
-        <h5 class="mt-3 text-secondary fw-bold">No Active In-House Guests</h5>
-        <p class="text-muted small mb-0">The query matched no checked-in system records.</p>
+      <div class="empty-state-panel">
+        <i class="bi bi-people text-muted"></i>
+        <h5>No Active Guests</h5>
+        <p>No checked-in guests matched your query.</p>
       </div>
     </ng-template>
 
-    <div *ngIf="enrichedGuests().length > guestPageSize"
-      class="card border-0 shadow-sm bg-white rounded-3 mt-4 py-2.5 px-3 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
-      <span class="text-muted small">
+    <!-- Pagination -->
+    <div *ngIf="totalGuestsCount() > guestPageSize" class="bk-pagination-card mt-4">
+      <span class="pagination-meta">
         Showing <strong>{{ (guestPage - 1) * guestPageSize + 1 }}</strong>-<strong>{{ (guestPage * guestPageSize) >
-          enrichedGuests().length ? enrichedGuests().length : (guestPage * guestPageSize) }}</strong> of <strong>{{
-          enrichedGuests().length }}</strong>
+          totalGuestsCount() ? totalGuestsCount() : (guestPage * guestPageSize) }}</strong> of <strong>{{
+          totalGuestsCount() }}</strong>
       </span>
-      <div class="pagination-controls d-flex align-items-center gap-1">
-        <button class="btn btn-light border btn-sm px-2.5" [disabled]="guestPage === 1" (click)="prevPage()">
+      <div class="pagination-controls">
+        <button class="pagination-btn" [disabled]="guestPage === 1" (click)="prevPage()">
           <i class="bi bi-chevron-left"></i>
         </button>
-        <span class="small font-monospace text-dark px-2 fw-bold">Page {{ guestPage }}/{{ totalPages() }}</span>
-        <button class="btn btn-light border btn-sm px-2.5" [disabled]="guestPage === totalPages()" (click)="nextPage()">
+        <span class="page-indicator">Page {{ guestPage }}/{{ totalPages() }}</span>
+        <button class="pagination-btn" [disabled]="guestPage === totalPages()" (click)="nextPage()">
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>
     </div>
   </div>
+
 </div>
+
 <!-- ==========================================
      EXTEND STAY MODAL
 ========================================== -->
 <div class="modal-overlay d-flex justify-content-center align-items-center" *ngIf="showExtendModal"
   (click)="closeExtendModal()">
-
   <div class="modal-card bg-white rounded-4 shadow-lg" (click)="$event.stopPropagation()">
-
     <div class="modal-header border-0">
       <h5 class="fw-bold mb-0">
         <i class="bi bi-calendar-plus text-primary me-2"></i>
         Extend Booking Stay
       </h5>
-
       <button class="btn-close" (click)="closeExtendModal()">
+        <i class="bi bi-x-lg"></i>
       </button>
     </div>
-
     <div class="modal-body">
-
       <div class="mb-3">
-        <label class="form-label fw-semibold">
-          Booking ID
-        </label>
-
+        <label class="form-label fw-semibold">Booking ID</label>
         <input class="form-control" [value]="'#' + extendBookingId" disabled>
       </div>
-
       <div class="mb-3">
-        <label class="form-label fw-semibold">
-          New Check-Out Date
-        </label>
-
+        <label class="form-label fw-semibold">New Check-Out Date</label>
         <input type="date" class="form-control" [(ngModel)]="newCheckOutDate">
       </div>
-
     </div>
-
     <div class="modal-footer border-0">
-      <button class="btn btn-light border" (click)="closeExtendModal()">
-        Cancel
-      </button>
-
-      <button class="btn btn-primary" (click)="extendStay()">
-        Confirm Extension
-      </button>
+      <button class="btn btn-light border" (click)="closeExtendModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="extendStay()" [disabled]="!newCheckOutDate">Confirm Extension</button>
     </div>
-
   </div>
 </div>
 
@@ -346,89 +374,136 @@
 ========================================== -->
 <div class="modal-overlay d-flex justify-content-center align-items-center" *ngIf="showDetailsModal"
   (click)="closeDetailsModal()">
-
   <div class="modal-card bg-white rounded-4 shadow-lg" (click)="$event.stopPropagation()">
-
     <div class="modal-header border-0">
-
       <h5 class="fw-bold mb-0">
         <i class="bi bi-info-circle text-primary me-2"></i>
         Booking Details
       </h5>
-
       <button class="btn-close" (click)="closeDetailsModal()">
+        <i class="bi bi-x-lg"></i>
       </button>
-
     </div>
 
     <div class="modal-body">
-
-      <div class="row g-3">
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Booking ID</small>
-          <h6>#{{ selectedBooking?.bookingId }}</h6>
+      <!-- Guest Hero Summary Card -->
+      <div class="guest-hero-card mb-4">
+        <div class="guest-avatar av-large">
+          {{ selectedBooking?.customerName?.charAt(0).toUpperCase() }}
         </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Guest Name</small>
-          <h6>{{ selectedBooking?.customerName }}</h6>
+        <div class="guest-info-block">
+          <h4 class="guest-modal-name">{{ selectedBooking?.customerName }}</h4>
+          <div class="d-flex align-items-center gap-2 mt-1">
+            <span class="bk-id-chip">#{{ selectedBooking?.bookingId }}</span>
+            <span class="badge" [ngClass]="{
+              'badge-green': selectedBooking?.status === 'Confirmed' || selectedBooking?.status === 'CheckedIn',
+              'badge-amber': selectedBooking?.status === 'CheckedOut',
+              'badge-red': selectedBooking?.status === 'Cancelled'
+            }">{{ selectedBooking?.status }}</span>
+          </div>
         </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Email</small>
-          <p class="mb-0">{{ selectedBooking?.email || '-' }}</p>
-        </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Phone</small>
-          <p class="mb-0">{{ selectedBooking?.phone || '-' }}</p>
-        </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Room</small>
-          <p class="mb-0">
-            Room {{ selectedBooking?.roomNumber }}
-          </p>
-        </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Amount</small>
-          <h6 class="text-success">
-            ₹{{ selectedBooking?.totalAmount | number }}
-          </h6>
-        </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Check-In</small>
-          <p class="mb-0">{{ selectedBooking?.checkInDate }}</p>
-        </div>
-
-        <div class="col-md-6">
-          <small class="text-muted d-block">Check-Out</small>
-          <p class="mb-0">{{ selectedBooking?.checkOutDate }}</p>
-        </div>
-
-        <div class="col-12">
-          <small class="text-muted d-block">Status</small>
-
-          <span class="badge px-3 py-2" style="background-color: rgb(19, 176, 44);">
-            {{ selectedBooking?.status }}
-          </span>
-        </div>
-
       </div>
 
+      <!-- Stay Info Card (Check-in to Check-out Timeline) -->
+      <div class="stay-timeline-card mb-4">
+        <div class="stay-point">
+          <small class="meta-label">Check-In</small>
+          <span class="stay-date text-success"><i class="bi bi-calendar-check me-1.5"></i>{{
+            selectedBooking?.checkInDate }}</span>
+        </div>
+        <div class="stay-arrow">
+          <i class="bi bi-arrow-right"></i>
+        </div>
+        <div class="stay-point text-end">
+          <small class="meta-label">Check-Out</small>
+          <span class="stay-date text-danger"><i class="bi bi-calendar-x me-1.5"></i>{{ selectedBooking?.checkOutDate
+            }}</span>
+        </div>
+      </div>
+
+      <!-- General Booking Information Section -->
+      <div class="details-section-grid">
+        <!-- Contact Information Block -->
+        <div class="info-block-card">
+          <div class="info-block-header">
+            <i class="bi bi-person-badge text-primary"></i>
+            <span>Contact Info</span>
+          </div>
+          <div class="info-block-body mt-2">
+            <div class="info-row">
+              <span class="info-label">Phone</span>
+              <span class="info-value">{{ selectedBooking?.phone || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email</span>
+              <span class="info-value text-truncate" title="{{ selectedBooking?.email }}">{{ selectedBooking?.email ||
+                'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room & Billing Block -->
+        <div class="info-block-card">
+          <div class="info-block-header">
+            <i class="bi bi-credit-card text-success"></i>
+            <span>Stay & Folio</span>
+          </div>
+          <div class="info-block-body mt-2">
+            <div class="info-row">
+              <span class="info-label">Room</span>
+              <span class="info-value fw-bold text-dark"><i class="bi bi-door-open me-1"></i>Rm {{
+                selectedBooking?.roomNumber || 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Folio Total</span>
+              <span class="info-value text-success fw-bold">₹{{ selectedBooking?.totalAmount | number }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="modal-footer border-0">
+      <button class="btn btn-secondary" (click)="closeDetailsModal()">Close</button>
+    </div>
+  </div>
+</div>
 
-      <button class="btn btn-secondary" (click)="closeDetailsModal()">
-        Close
+<!-- ==========================================
+     CUSTOM CONFIRMATION MODAL OVERLAY
+========================================== -->
+<div class="modal-overlay d-flex justify-content-center align-items-center" *ngIf="showConfirmModal()">
+  <div class="modal-card bg-white rounded-4 shadow-lg text-center" style="max-width: 420px; padding: 32px;"
+    (click)="$event.stopPropagation()">
+
+    <div class="confirm-icon-wrap mb-3" [ngClass]="{
+      'confirm-success': confirmAction() === 'checkin',
+      'confirm-danger': confirmAction() === 'checkout' || confirmAction() === 'cancel'
+    }">
+      <i class="bi" [ngClass]="{
+        'bi-door-open-fill': confirmAction() === 'checkin',
+        'bi-receipt-cutoff': confirmAction() === 'checkout',
+        'bi-x-circle-fill': confirmAction() === 'cancel'
+      }"></i>
+    </div>
+
+    <h4 class="fw-bold text-dark mb-2">{{ confirmTitle() }}</h4>
+    <p class="text-muted small mb-4">{{ confirmMessage() }}</p>
+
+    <div class="d-flex gap-3 justify-content-center">
+      <button class="btn btn-light border px-4 py-2 fw-semibold" style="border-radius: 12px;"
+        (click)="closeConfirmModal()" [disabled]="processingAction()">
+        Cancel
       </button>
-
+      <button class="btn px-4 py-2 fw-semibold text-white" [ngClass]="{
+        'btn-success': confirmAction() === 'checkin',
+        'btn-danger': confirmAction() === 'checkout' || confirmAction() === 'cancel'
+      }" style="border-radius: 12px;" (click)="executeConfirmedAction()" [disabled]="processingAction()">
+        <span *ngIf="!processingAction()">Confirm</span>
+        <span *ngIf="processingAction()"><span class="spinner-border spinner-border-sm me-1.5"
+            role="status"></span>Processing...</span>
+      </button>
     </div>
 
   </div>
-
 </div>

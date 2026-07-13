@@ -1,3 +1,4 @@
+/* Add this method to roombooking.service.ts */
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { RoomBooking } from '../models/roombooking.model';
@@ -24,6 +25,11 @@ export class RoomBookingService {
     return this.http.get(url, { headers: this.getHeaders() });
   }
 
+  public getMyBookingDetails() {
+    const url = `${apiUrl}RoomBooking/my`;
+    return this.http.get(url, { headers: this.getHeaders() });
+  }
+
   public getBookingRooms(bookingId: number) {
     const url = `${apiUrl}RoomBooking/${bookingId}/rooms`;
     return this.http.get(url, { headers: this.getHeaders() });
@@ -44,18 +50,18 @@ export class RoomBookingService {
     return this.http.post(url, {}, { headers: this.getHeaders() });
   }
 
-  public getTodayCheckIns() {
-    const url = `${apiUrl}RoomBooking/today-checkins`;
+  public getTodayCheckIns(page: number = 1, pageSize: number = 5) {
+    const url = `${apiUrl}RoomBooking/today-checkins?page=${page}&pageSize=${pageSize}`;
     return this.http.get(url, { headers: this.getHeaders() });
   }
 
-  public getTodayCheckOuts() {
-    const url = `${apiUrl}RoomBooking/today-checkouts`;
+  public getTodayCheckOuts(page: number = 1, pageSize: number = 5) {
+    const url = `${apiUrl}RoomBooking/today-checkouts?page=${page}&pageSize=${pageSize}`;
     return this.http.get(url, { headers: this.getHeaders() });
   }
 
-  public getCurrentGusests() {
-    const url = `${apiUrl}RoomBooking/current-guests`;
+  public getCurrentGusests(page: number = 1, pageSize: number = 5) {
+    const url = `${apiUrl}RoomBooking/current-guests?page=${page}&pageSize=${pageSize}`;
     return this.http.get(url, { headers: this.getHeaders() });
   }
 
@@ -68,5 +74,14 @@ export class RoomBookingService {
     const url = `${apiUrl}RoomBooking/${bookingId}/extend-stay`;
     return this.http.post(url, { newCheckOutDate }, { headers: this.getHeaders() });
   }
-}
 
+  public getBookingsByStatus(status: string) {
+    const url = `${apiUrl}RoomBooking/status/${status}`;
+    return this.http.get(url, { headers: this.getHeaders() });
+  }
+
+  public getBookingsByCustomerId(customerId: number) {
+    const url = `${apiUrl}RoomBooking/customer/${customerId}`;
+    return this.http.get(url, { headers: this.getHeaders() });
+  }
+}

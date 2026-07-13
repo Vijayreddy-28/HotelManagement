@@ -8,7 +8,7 @@
       </h2>
       <p class="page-subtitle">Verify your selected items and confirm room delivery</p>
     </div>
-    
+
     <a routerLink="/customer/food" class="btn-back-menu">
       <i class="bi bi-arrow-left"></i>
       <span>Back to Menu</span>
@@ -26,18 +26,31 @@
         </div>
         <div class="card-details">
           <h3>Delivery Location</h3>
-          <p class="room-number-display">Room {{ roomNumber }}</p>
-          <span class="booking-ref-badge">Booking Ref: #{{ bookingId }}</span>
+
+          <!-- Unified Hotel Rooms Selector Dropdown -->
+          <div class="room-dropdown-wrapper">
+            <label class="form-label-select" for="room-select">Choose Delivery Room:</label>
+            <select id="room-select" class="form-select-custom" [ngModel]="roomNumber"
+              (ngModelChange)="onRoomNumberChange($event)">
+              <option *ngFor="let r of allRooms" [value]="r.roomNumber">
+                Room {{ r.roomNumber }} ( Booking # {{ r.bookingId }} )
+              </option>
+            </select>
+          </div>
+
+          <div class="current-selection-badge" *ngIf="roomNumber">
+            <span class="badge-selected-info">
+              <i class="bi bi-check-circle-fill"></i> Delivering to Room {{ roomNumber }}
+            </span>
+          </div>
+
         </div>
-        <a routerLink="/customer/food" class="btn-change-room" title="Change delivery room">
-          Change Room
-        </a>
       </div>
 
       <!-- Items List Card -->
       <div class="info-card items-list-card">
         <h3>Order Items</h3>
-        
+
         <div class="items-table-wrapper">
           <table class="items-table">
             <thead>
@@ -91,12 +104,8 @@
           Special Instructions
         </h3>
         <p class="field-subtext">Add any notes for the chef (e.g. allergies, spice level, cutlery requirements)</p>
-        <textarea
-          class="instructions-textarea"
-          rows="3"
-          placeholder="Enter instructions here..."
-          [(ngModel)]="specialInstructions"
-        ></textarea>
+        <textarea class="instructions-textarea" rows="3" placeholder="Enter instructions here..."
+          [(ngModel)]="specialInstructions"></textarea>
       </div>
     </div>
 
@@ -104,7 +113,7 @@
     <div class="cart-summary-col">
       <div class="summary-sticky-card">
         <h3>Bill Summary</h3>
-        
+
         <div class="bill-breakdown">
           <div class="bill-row">
             <span>Items Subtotal</span>
@@ -143,8 +152,28 @@
       <h3>Your Food Cart is Empty</h3>
       <p>Browse our kitchen menu and add items to your cart to make an order.</p>
       <a routerLink="/customer/food" class="btn-browse-menu">
-        Browse Food Menu
+        <i class="bi bi-search"></i>
+        <span>Browse Food Menu</span>
       </a>
     </div>
   </ng-template>
+
+  <!-- ===================== CUSTOM ORDER CONFIRMATION MODAL ===================== -->
+  <div class="booking-modal-overlay" *ngIf="showConfirmModal" (click)="cancelOrder()">
+    <div class="booking-modal-card" (click)="$event.stopPropagation()">
+      <div class="booking-modal-icon food-icon">
+        <i class="bi bi-cart-check"></i>
+      </div>
+      <h3 class="booking-modal-title">Place Food Order</h3>
+      <p class="booking-modal-text">
+        Deliver to Room {{ roomNumber }} (Booking #{{ bookingId }})<br>
+        Total items: {{ cartItems().length }}<br>
+        Grand Total: <strong>₹{{ grandTotal() }}</strong>
+      </p>
+      <div class="booking-modal-actions">
+        <button type="button" class="btn-booking-cancel" (click)="cancelOrder()">Cancel</button>
+        <button type="button" class="btn-booking-confirm food-confirm" (click)="executeOrder()">Place Order</button>
+      </div>
+    </div>
+  </div>
 </div>

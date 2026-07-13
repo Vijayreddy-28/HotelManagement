@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FoodMenuService } from '../../../services/foodmenu.service';
 import { FoodOrderService } from '../../../services/foodorder.service';
+import { RoomBookingService } from '../../../services/roombooking.service';
 import { FoodMenu } from '../../../models/foodmenu.model';
 import { FoodOrder } from '../../../models/foodorder.model';
-import Swal from 'sweetalert2';
+import { CurrentRooms } from '../../../models/room.model';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-food-order',
@@ -20,30 +22,73 @@ export class FoodOrderComponent implements OnInit {
   roomId = 0;
   roomNumber = 0;
   specialInstructions = '';
+  showConfirmModal = false;
+  pendingOrderPayload: any = null;
+
+  // Room delivery options
+  allRooms: any[] = [];
+  selectedBookingOption = ''; // format: "bookingId-roomId-roomNumber"
 
   constructor(
     private foodMenuService: FoodMenuService,
     private foodOrderService: FoodOrderService,
-    private router: Router
+    private roomBookingService: RoomBookingService,
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit() {
-    // Read room and booking details from foodMenuService
+    // 1. Read existing selection if any
     this.bookingId = this.foodMenuService.selectedBookingId() || 0;
     this.roomId = this.foodMenuService.selectedRoomId() || 0;
     this.roomNumber = this.foodMenuService.selectedRoomNumber() || 0;
 
-    // Fallback if the user navigated here directly without selecting a room
-    if (!this.bookingId || !this.roomId) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Room Selection Required',
-        text: 'Please select a room before opening the food cart.',
-        confirmButtonColor: '#2563eb',
-      }).then(() => {
-        this.router.navigate(['/customer/food']);
-      });
+    if (this.bookingId && this.roomId) {
+      this.selectedBookingOption = `${this.bookingId}-${this.roomId}-${this.roomNumber}`;
     }
+
+    // 2. Fetch all active bookings for this customer
+    this.loadActiveBookings();
+  }
+
+  onRoomNumberChange(roomNumVal: any) {
+    if (!roomNumVal) return;
+    const num = parseInt(roomNumVal, 10);
+    this.roomNumber = num;
+
+    const matchedRoom = this.allRooms.find(r => r.roomNumber === num);
+    if (matchedRoom) {
+      this.selectRoom(matchedRoom.bookingId, matchedRoom.roomId, num);
+    }
+  }
+
+  loadActiveBookings() {
+    this.roomBookingService.getMyBookings().subscribe({
+      next: (res: any) => {
+        this.allRooms = Array.isArray(res) ? res : [];
+
+        // Auto-select first booked room if no previous selection exists
+        if (!this.bookingId && this.allRooms.length > 0) {
+          const opt = this.allRooms[0];
+          this.selectRoom(opt.bookingId, opt.roomId, opt.roomNumber);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load active room bookings.', err);
+        this.allRooms = [];
+      }
+    });
+  }
+
+  selectRoom(bookingId: number, roomId: number, roomNumber: number) {
+    this.bookingId = bookingId;
+    this.roomId = roomId;
+    this.roomNumber = roomNumber;
+    this.selectedBookingOption = `${bookingId}-${roomId}-${roomNumber}`;
+    // Update in service for consistency
+    this.foodMenuService.selectedBookingId.set(bookingId);
+    this.foodMenuService.selectedRoomId.set(roomId);
+    this.foodMenuService.selectedRoomNumber.set(roomNumber);
   }
 
   // Grouped cart items signal for template compatibility
@@ -103,85 +148,51 @@ export class FoodOrderComponent implements OnInit {
   confirmOrder() {
     const rawCartItems = this.foodMenuService.cartItems();
     if (rawCartItems.length === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Empty Cart',
-        text: 'Please add items to your cart before confirming the order.',
-        confirmButtonColor: '#2563eb',
-      });
+      this.toastr.warning('Please add items to your cart before confirming the order.', 'Empty Cart');
       return;
     }
 
     if (!this.bookingId || !this.roomId) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Missing Details',
-        text: 'Room and booking information are missing. Please re-select your room.',
-        confirmButtonColor: '#2563eb',
-      }).then(() => {
-        this.router.navigate(['/customer/food']);
-      });
+      this.toastr.error('Room and booking information are missing. Please re-select your room.', 'Missing Details');
+      this.router.navigate(['/customer/food']);
       return;
     }
 
-    // Convert cart to DTO class consisting of bookingid, roomid and list of fooditems
-    const orderDto = new FoodOrder(
-      this.bookingId,
-      this.roomId,
-      rawCartItems
-    );
+    // Convert grouped cart items to match C# backend DTO structure (CreateOrderRequest / CreateOrderItemRequest)
+    const itemsPayload = this.cartItems().map(item => ({
+      foodMenuId: item.itemId,
+      quantity: item.quantity
+    }));
 
-    Swal.fire({
-      title: 'Confirm Food Order',
-      html: `
-        <div style="text-align: left; padding: 0 10px;">
-          <p><strong>Deliver to:</strong> Room ${this.roomNumber} (Booking #${this.bookingId})</p>
-          <p><strong>Total Items:</strong> ${rawCartItems.length}</p>
-          <p><strong>Total Amount:</strong> ₹${this.grandTotal()}</p>
-          ${this.specialInstructions ? `<p><strong>Instructions:</strong> "${this.specialInstructions}"</p>` : ''}
-        </div>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Confirm Order',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#0f4c81',
-      cancelButtonColor: '#64748b',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: 'Processing Order...',
-          text: 'Sending your order details to the kitchen.',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        });
+    this.pendingOrderPayload = {
+      bookingId: this.bookingId,
+      roomId: this.roomId,
+      items: itemsPayload
+    };
 
-        this.foodOrderService.foodOrderApiCall(orderDto).subscribe({
-          next: (response: any) => {
-            Swal.fire({
-              icon: 'success',
-              title: 'Order Placed!',
-              text: response.message || 'Your order has been successfully sent to the kitchen.',
-              confirmButtonText: 'Great!',
-              confirmButtonColor: '#0f4c81',
-            }).then(() => {
-              this.foodMenuService.clearCart();
-              this.router.navigate(['/customer/food']);
-            });
-          },
-          error: (err: any) => {
-            Swal.fire({
-              icon: 'error',
-              title: 'Order Failed',
-              text: err.error?.message || err.message || 'An error occurred while placing your food order. Please try again.',
-              confirmButtonText: 'OK',
-              confirmButtonColor: '#2563eb',
-            });
-          },
-        });
-      }
+    this.showConfirmModal = true;
+  }
+
+  cancelOrder() {
+    this.showConfirmModal = false;
+    this.pendingOrderPayload = null;
+  }
+
+  executeOrder() {
+    if (!this.pendingOrderPayload) return;
+    this.showConfirmModal = false;
+
+    this.toastr.info('Sending your order details to the kitchen...', 'Processing Order');
+
+    this.foodOrderService.foodOrderApiCall(this.pendingOrderPayload).subscribe({
+      next: (response: any) => {
+        this.toastr.success(response.message || 'Your order has been successfully sent to the kitchen.', 'Order Placed!');
+        this.foodMenuService.clearCart();
+        this.router.navigate(['/customer/food']);
+      },
+      error: (err: any) => {
+        this.toastr.error(err.error?.message || err.message || 'An error occurred while placing your food order. Please try again.', 'Order Failed');
+      },
     });
   }
 }

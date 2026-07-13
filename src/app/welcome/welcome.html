@@ -1,16 +1,36 @@
 <div class="welcome-container">
-  <div class="content">
-    <h1 class="title"><i class="bi bi-buildings-fill"></i> The Canopy Retreat</h1>
+  
+  <!-- Subtle ambient background shapes -->
+  <div class="ambient-glow bg-shape-1"></div>
+  <div class="ambient-glow bg-shape-2"></div>
 
-    <p class="subtitle">
-      Welcome to The Canopy Retreat where comfort, luxury, and exceptional hospitality come
-      together.
-    </p>
-
-    <div class="button-group">
-      <button class="btn-custom employee-btn" (click)="employeeLogin()">Employee Login</button>
-
-      <button class="btn-custom guest-btn" (click)="guestRegister()">Guest Login/Register</button>
+  <div class="welcome-content">
+    
+    <div class="welcome-brand">
+      <div class="brand-logo-large">
+        <i class="bi bi-buildings-fill"></i>
+      </div>
+      <h1 class="brand-title">The Canopy Retreat</h1>
+      <p class="brand-tagline">Exquisite Hospitality & Luxury Accommodations</p>
     </div>
+
+    <div class="welcome-card">
+      <p class="card-message">
+        Welcome to The Canopy Retreat. Enter our guest portal to secure bookings, request personalized room services, and experience top-tier hospitality tailored precisely for your comfort.
+      </p>
+
+      <div class="action-buttons-group">
+        <button class="btn-portal btn-guest" (click)="guestRegister()">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Sign In to Portal</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="welcome-footer">
+      <p>&copy; 2026 The Canopy Retreat. All rights reserved.</p>
+    </div>
+
   </div>
+
 </div>

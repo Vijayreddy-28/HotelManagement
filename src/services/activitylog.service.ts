@@ -22,4 +22,11 @@ export class ActivityLogService {
       headers: this.getHeaders()
     });
   }
+
+  public getActivities(page: number = 1, pageSize: number = 10, month?: number, day?: number): Observable<any> {
+    let url = `${this.base_url}?page=${page}&pageSize=${pageSize}`;
+    if (month) url += `&month=${month}`;
+    if (day) url += `&day=${day}`;
+    return this.http.get<any>(url, { headers: this.getHeaders() });
+  }
 }

@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import Swal from 'sweetalert2';
+
 import { BillingService } from '../../../services/billing.service';
 import { PaymentService } from '../../../services/payment.service';
 import { RoomBookingService } from '../../../services/roombooking.service';
@@ -24,6 +24,10 @@ export class ReceptionistBillingComponent {
   loadingBill = false;
   bill: Bill | null = null;
 
+  // Active checked-in bookings for the dropdown
+  checkedInBookings: { bookingId: number; customerName: string }[] = [];
+  loadingBookings = true;
+
   // Step 2: Payment section (revealed automatically once a bill exists)
   billIdForPayment: number | null = null;
   selectedMethod: PaymentMethod | null = null;
@@ -34,6 +38,13 @@ export class ReceptionistBillingComponent {
   // Step 3: Checkout
   checkingOut = false;
 
+  // Custom Confirmation Modal
+  showConfirmModal = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmAction: 'payment' | 'checkout' | '' = '';
+  processingAction = false;
+
   constructor(
     private billingService: BillingService,
     private paymentService: PaymentService,
@@ -41,6 +52,32 @@ export class ReceptionistBillingComponent {
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  ngOnInit(): void {
+    this.loadCheckedInBookings();
+  }
+
+  loadCheckedInBookings(): void {
+    this.loadingBookings = true;
+    this.roomBookingService.getBookingsByStatus('CheckedIn').subscribe({
+      next: (res: any) => {
+        this.checkedInBookings = Array.isArray(res)
+          ? res.map((b: any) => ({ bookingId: b.bookingId, customerName: b.customerName }))
+          : [];
+        this.loadingBookings = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.checkedInBookings = [];
+        this.loadingBookings = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onBookingSelected(bookingId: number): void {
+    this.bookingIdInput = bookingId ? Number(bookingId) : null;
+  }
 
   // ===================== Bill Generation =====================
   generateBill(): void {
@@ -130,7 +167,7 @@ export class ReceptionistBillingComponent {
   // the getters above already recompute automatically, so this is a no-op.
   updateButtonStates(): void { }
 
-  collectPayment(): void {
+  confirmCollectPayment(): void {
     if (!this.bill || !this.billIdForPayment || this.selectedMethod === null) {
       this.toastr.warning('Please select a payment method before collecting payment.', 'Validation');
       return;
@@ -140,26 +177,38 @@ export class ReceptionistBillingComponent {
       return;
     }
 
-    Swal.fire({
-      title: 'Confirm Payment Collection',
-      html: `Collect <strong>\u20b9${this.bill.totalAmount.toLocaleString()}</strong> for Bill #${this.billIdForPayment}?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Collect Payment',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#2563eb',
-      cancelButtonColor: '#64748b'
-    }).then((result) => {
-      if (!result.isConfirmed) return;
+    this.confirmTitle = 'Confirm Payment Collection';
+    this.confirmMessage = `Reconcile and collect \u20b9${this.bill.totalAmount.toLocaleString()} for Invoice Bill #${this.billIdForPayment}?`;
+    this.confirmAction = 'payment';
+    this.showConfirmModal = true;
+  }
 
+  confirmCheckout(): void {
+    if (!this.bill || !this.paymentCollected) return;
+
+    this.confirmTitle = 'Confirm Room Check-Out';
+    this.confirmMessage = `Release and check out guest for Booking ID #${this.bill.bookingId}?`;
+    this.confirmAction = 'checkout';
+    this.showConfirmModal = true;
+  }
+
+  executeConfirmedAction(): void {
+    const action = this.confirmAction;
+    if (!action) return;
+
+    this.processingAction = true;
+    this.cdr.detectChanges();
+
+    if (action === 'payment') {
       const request = new CreatePaymentRequest(this.billIdForPayment!, this.bill!.totalAmount, this.selectedMethod!);
-
       this.collectingPayment = true;
       this.cdr.detectChanges();
 
       this.paymentService.createPayment(request).subscribe({
         next: (response: any) => {
           this.collectingPayment = false;
+          this.processingAction = false;
+          this.closeConfirmModal();
 
           if (response?.statusCode && response.statusCode >= 400) {
             this.cdr.detectChanges();
@@ -167,57 +216,49 @@ export class ReceptionistBillingComponent {
             return;
           }
 
-          // Only mark the payment as collected once the API confirms success.
           this.paymentCollected = true;
           this.cdr.detectChanges();
           this.toastr.success('Payment collected successfully. You may now check out the guest.', 'Payment Successful');
         },
         error: (err) => {
           this.collectingPayment = false;
+          this.processingAction = false;
+          this.closeConfirmModal();
           this.cdr.detectChanges();
-          // paymentCollected stays false here so the form remains editable and the guest can retry.
           this.toastr.error(err.error?.message || 'Payment could not be collected.', 'Payment Failed');
         }
       });
-    });
-  }
-
-  // ===================== Checkout =====================
-  checkout(): void {
-    if (!this.bill || !this.paymentCollected) return;
-
-    Swal.fire({
-      title: 'Confirm Check-Out',
-      text: `Complete check-out for Booking #${this.bill.bookingId}?`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Check Out Guest',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#64748b'
-    }).then((result) => {
-      if (!result.isConfirmed) return;
-
+    } else if (action === 'checkout') {
       this.checkingOut = true;
       this.cdr.detectChanges();
 
       this.roomBookingService.checkOut(this.bill!.bookingId).subscribe({
         next: (response: any) => {
           this.checkingOut = false;
+          this.processingAction = false;
+          this.closeConfirmModal();
           this.cdr.detectChanges();
           if (response?.statusCode && response.statusCode >= 400) {
             this.toastr.error(response.message || 'Unable to check out guest.', 'Checkout Failed');
             return;
           }
-          Swal.fire('Checked Out', 'Guest has been checked out successfully.', 'success');
+          this.toastr.success('Guest has been checked out successfully.', 'Checked Out');
           this.resetSearch();
         },
         error: (err) => {
           this.checkingOut = false;
+          this.processingAction = false;
+          this.closeConfirmModal();
           this.cdr.detectChanges();
           this.toastr.error(err.error?.message || 'Unable to check out guest.', 'Checkout Failed');
         }
       });
-    });
+    }
+  }
+
+  closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.confirmAction = '';
+    this.processingAction = false;
   }
 }

@@ -1,110 +1,113 @@
-<div class="container-fluid p-0">
+<div class="login-workspace">
   <div class="row g-0 vh-100">
 
-    <!-- Left Image -->
-    <div class="col-lg-7 d-none d-lg-block image-side">
+    <!-- Left Side: Editorial Banner Panel (Glow layers + Brand messaging) -->
+    <div class="col-lg-7 d-none d-lg-block banner-side">
+      <div class="banner-overlay">
 
-      <div class="overlay">
-
-        <div class="brand">
-          <h2><i class="bi bi-buildings-fill"></i> The Canopy Retreat</h2>
+        <div class="banner-brand" routerLink="/" style="cursor: pointer;">
+          <div class="brand-logo">
+            <i class="bi bi-buildings-fill"></i>
+          </div>
+          <div class="brand-info">
+            <h2 class="brand-name">The Canopy Retreat</h2>
+            <span class="brand-subtitle">Exquisite Hospitality</span>
+          </div>
         </div>
 
-        <div class="bottom-content">
-
-          <h1>Experience Comfort<br>Like Never Before</h1>
-
-          <p>
-            Sign in to manage your bookings, explore exclusive offers,
-            and enjoy premium hospitality.
+        <div class="banner-body">
+          <h1 class="headline-hero">Experience Comfort<br>Like Never Before</h1>
+          <p class="headline-lead">
+            Sign in to access your dashboard, manage active bookings, explore fine dining menus, and enjoy hospitality
+            tailored specifically to your needs.
           </p>
 
-          <div class="features">
-
-            <div>
-              <i class="bi bi-tag"></i>
-              <span>Best Price</span>
+          <div class="brand-features-row">
+            <div class="feature-item">
+              <i class="bi bi-tag-fill"></i>
+              <span>Guaranteed Rates</span>
             </div>
-
-            <div>
-              <i class="bi bi-shield-check"></i>
-              <span>Secure Booking</span>
+            <div class="feature-item">
+              <i class="bi bi-shield-fill-check"></i>
+              <span>Secure Reservation</span>
             </div>
-
-            <div>
-              <i class="bi bi-headset"></i>
-              <span>24/7 Support</span>
+            <div class="feature-item">
+              <i class="bi bi-telephone-fill"></i>
+              <span>24/7 Desk Care</span>
             </div>
-
           </div>
+        </div>
 
+        <div class="banner-footer">
+          <p>&copy; 2026 The Canopy Retreat. All rights reserved.</p>
         </div>
 
       </div>
-
     </div>
 
-    <!-- Login -->
-    <div class="col-lg-5 d-flex align-items-center justify-content-center">
+    <!-- Right Side: Login Form Card Panel -->
+    <div class="col-lg-5 d-flex align-items-center justify-content-center form-side">
 
-      <div class="login-card">
+      <div class="form-container-card">
 
-        <div class="text-end mb-5">
-          New here?
-          <a routerLink="/register">Create Account</a>
+        <div class="form-card-header">
+          <div class="nav-redirect">
+            <span>New Guest?</span>
+            <a routerLink="/register" class="link-action">Create Account</a>
+          </div>
+
+          <h2 class="form-title">Welcome Back</h2>
+          <p class="form-subtitle">Sign in to continue to your guest or employee account</p>
         </div>
 
-        <h2 class="fw-bold">Welcome Back</h2>
+        <form [formGroup]="registerForm" (ngSubmit)="Login()" class="form-inputs-group">
 
-        <p class="text-muted mb-4">
-          Sign in to continue to your account
-        </p>
-
-        <form [formGroup]="registerForm" (ngSubmit)="Login()">
-
-          <div class="mb-3">
-
-            <label>Email Address</label>
-
-            <div class="input-group">
-
-              <span class="input-group-text">
-                <i class="bi bi-envelope"></i>
-              </span>
-
-              <input type="email" class="form-control" placeholder="name@gmail.com" formControlName="loginId">
-
+          <!-- Email / Username input -->
+          <div class="input-field-block">
+            <label class="field-label" for="loginId">Email Address</label>
+            <div class="input-icon-wrapper">
+              <input type="text" id="loginId" class="form-control-custom" placeholder="name@gmail.com"
+                formControlName="loginId" />
+              <i class="bi bi-envelope-fill input-icon"></i>
             </div>
-
+            <div class="validation-message"
+              *ngIf="registerForm.get('loginId')?.touched && registerForm.get('loginId')?.invalid">
+              <i class="bi bi-exclamation-circle-fill"></i> Account email or ID is required.
+            </div>
           </div>
 
-          <div class="mb-4">
-
-            <label>Password</label>
-
-            <div class="input-group">
-
-              <span class="input-group-text">
-                <i class="bi bi-lock"></i>
-              </span>
-
-              <input type="password" class="form-control" placeholder="Enter password" formControlName="password">
-
+          <!-- Password input -->
+          <div class="input-field-block">
+            <label class="field-label" for="password">Password</label>
+            <div class="input-icon-wrapper">
+              <input type="password" id="password" class="form-control-custom" placeholder="••••••••"
+                formControlName="password" />
+              <i class="bi bi-shield-lock-fill input-icon"></i>
             </div>
-
+            <div class="validation-message"
+              *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+              <i class="bi bi-exclamation-circle-fill"></i> Password is required.
+            </div>
           </div>
 
-          <button class="btn btn-primary w-100 login-btn" [disabled]="registerForm.invalid">
+          <!-- Action trigger -->
+          <div class="form-action-footer">
+            <button type="submit" class="btn-submit-login" [disabled]="registerForm.invalid || loggingIn">
+              <span *ngIf="!loggingIn"><i class="bi bi-box-arrow-in-right me-1.5"></i> Sign In</span>
+              <span *ngIf="loggingIn"><span class="spinner-border spinner-border-sm me-1.5" role="status"></span>Signing
+                In...</span>
+            </button>
+          </div>
 
-            Sign In
-
-          </button>
-
+          <!-- Go Back to Home link -->
+          <div class="back-home-link-row">
+            <a routerLink="/" class="btn-back-home">
+              <i class="bi bi-arrow-left"></i>
+              <span>Back to Home</span>
+            </a>
+          </div>
         </form>
-
       </div>
-
     </div>
-
   </div>
 </div>

@@ -1,0 +1,110 @@
+<div class="bookings-workspace">
+  
+  <div class="workspace-header">
+    <a routerLink="/customer/rooms" class="btn-back">
+      <i class="bi bi-arrow-left"></i>
+      <span>Back to Rooms</span>
+    </a>
+    <h2 class="page-title">My Bookings</h2>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading your bookings...</span>
+    </div>
+    <p>Retrieving your bookings...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading() && bookings().length === 0" class="empty-state-card">
+    <div class="empty-icon-wrapper">
+      <i class="bi bi-calendar-x"></i>
+    </div>
+    <h3>No Bookings Found</h3>
+    <p>You do not have any active bookings at the moment. Explore our luxury rooms to place your first booking.</p>
+    <a routerLink="/customer/rooms" class="btn-enterprise-primary">
+      <i class="bi bi-search"></i>
+      <span>Browse Rooms</span>
+    </a>
+  </div>
+
+  <!-- Bookings Table -->
+  <div *ngIf="!loading() && bookings().length > 0" class="bookings-table-wrapper">
+    <table class="bookings-table">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let booking of bookings()">
+          <td class="booking-id-cell">#{{ booking.bookingId }}</td>
+          <td class="date-cell">{{ booking.checkIn }}</td>
+          <td class="date-cell">{{ booking.checkOut }}</td>
+          <td class="amount-cell">₹{{ booking.totalAmount.toLocaleString() }}</td>
+          <td>
+            <span class="status-badge" [class]="'status-' + booking.status.toLowerCase()">
+              {{ booking.status }}
+            </span>
+          </td>
+          <td>
+            <button class="btn-action-rooms" (click)="viewRooms(booking.bookingId)">
+              <i class="bi bi-door-open-fill"></i>
+              <span>Rooms</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Rooms Modal -->
+<div class="modal-backdrop" *ngIf="showRoomsModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Rooms for Booking #{{ activeBookingId() }}</h3>
+      <button class="btn-close-modal" (click)="closeRoomsModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Loading inside modal -->
+      <div *ngIf="loadingRooms()" class="modal-loading">
+        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+        <span>Fetching room details...</span>
+      </div>
+
+      <!-- No rooms found (fallback) -->
+      <div *ngIf="!loadingRooms() && selectedBookingRooms().length === 0" class="modal-empty">
+        <i class="bi bi-door-closed"></i>
+        <p>No rooms associated with this booking.</p>
+      </div>
+
+      <!-- Rooms list -->
+      <div *ngIf="!loadingRooms() && selectedBookingRooms().length > 0" class="modal-rooms-list">
+        <div class="modal-room-item" *ngFor="let room of selectedBookingRooms()">
+          <div class="room-icon-wrapper">
+            <i class="bi bi-door-open-fill"></i>
+          </div>
+          <div class="room-info">
+            <h4 class="room-number">Room {{ room.roomNumber }}</h4>
+            <p class="room-id-tag">Room ID: {{ room.roomId }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-close-footer" (click)="closeRoomsModal()">Close</button>
+    </div>
+  </div>
+</div>

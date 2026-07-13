@@ -10,7 +10,7 @@ export class BillingService {
     constructor(private http: HttpClient) { }
 
     public payBill(bookingId: number) {
-        const url = `${apiUrl}payment/${bookingId}`;
+        const url = `${apiUrl}Payment/${bookingId}`;
         const token = sessionStorage.getItem('token');
         const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
         return this.http.post(url, { headers });

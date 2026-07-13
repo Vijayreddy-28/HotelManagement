@@ -1,164 +1,156 @@
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<div class="feedback-container">
-
-    <div class="feedback-card">
-
-        <h2 class="title">Share Your Experience</h2>
-
-        <p class="subtitle">
-            Your feedback helps us improve our services
-            and provide a better stay for every guest.
-
-        </p>
-
-        <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()">
-
-            <!-- Booking ID -->
-            <div class="mb-3">
-                <label class="form-label">
-                    Booking ID
-                </label>
-
-                <input type="number" class="form-control" formControlName="bookingId">
-
-            </div>
-
-
-            <!-- Ratings -->
-
-            <div class="rating-grid">
-
-                <!-- Food -->
-
-                <div class="rating-card">
-
-                    <label class="form-label">
-                        Restaurant & Food Quality
-                    </label>
-
-                    <div class="star-rating">
-
-                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('foodRating')
-                           ? 'bi-star-fill active-star'
-                           : 'bi-star'" (click)="setRating('foodRating',star)">
-                        </i>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Room -->
-
-                <div class="rating-card">
-
-                    <label class="form-label">
-                        Room Comfort & Cleanliness
-                    </label>
-
-                    <div class="star-rating">
-
-                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('roomRating')
-                           ? 'bi-star-fill active-star'
-                           : 'bi-star'" (click)="setRating('roomRating',star)">
-                        </i>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Hygiene -->
-
-                <div class="rating-card">
-
-                    <label class="form-label">
-                        Hygiene & Sanitation
-                    </label>
-
-                    <div class="star-rating">
-
-                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('hygieneRating')
-                           ? 'bi-star-fill active-star'
-                           : 'bi-star'" (click)="setRating('hygieneRating',star)">
-                        </i>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Staff -->
-
-                <div class="rating-card">
-
-                    <label class="form-label">
-                        Staff Courtesy & Service
-                    </label>
-
-                    <div class="star-rating">
-
-                        <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('staffRating')
-                           ? 'bi-star-fill active-star'
-                           : 'bi-star'" (click)="setRating('staffRating',star)">
-                        </i>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Overall Rating -->
-
-            <div class="rating-card">
-
-                <label class="form-label">
-                    Overall Experience
-                </label>
-
-                <div class="star-rating">
-
-                    <i *ngFor="let star of ratings" class="bi" [ngClass]="star <= getRating('overallRating')
-                       ? 'bi-star-fill active-star'
-                       : 'bi-star'" (click)="setRating('overallRating',star)">
-                    </i>
-
-                </div>
-
-            </div>
-
-
-            <!-- Comments -->
-
-            <div class="mt-3">
-
-                <label class="form-label">
-                    Additional Comments
-                </label>
-
-                <textarea rows="3" class="form-control" formControlName="comments"
-                    placeholder="Tell us what you enjoyed or how we can improve your next stay....">
-                </textarea>
-
-            </div>
-
-
-            <!-- Submit -->
-
-            <div class="text-center mt-4">
-
-                <button type="submit" class="btn btn-submit" [disabled]="feedbackForm.invalid">
-
-                    Submit Feedback
-
-                </button>
-
-            </div>
-
-        </form>
-
+<div class="feedback-workspace">
+
+  <div class="feedback-luxury-card">
+    
+    <div class="feedback-header">
+      <div class="header-icon-badge">
+        <i class="bi bi-chat-heart-fill"></i>
+      </div>
+      <h2 class="title">Share Your Experience</h2>
+      <p class="subtitle">
+        Your valuable insights help us refine our service standard and deliver a stellar luxury stay for every guest.
+      </p>
     </div>
+
+    <form [formGroup]="feedbackForm" (ngSubmit)="submitFeedback()" class="luxury-feedback-form">
+
+      <!-- Booking ID Row -->
+      <div class="form-group-booking">
+        <label class="form-label" for="bookingId">
+          <i class="bi bi-qr-code"></i>
+          <span>Booking Reference ID</span>
+        </label>
+        <div class="input-wrapper">
+          <input type="number" id="bookingId" class="form-control-custom" formControlName="bookingId"
+            placeholder="e.g. 1024" />
+          <i class="bi bi-hash input-icon"></i>
+        </div>
+        <div class="validation-message" *ngIf="feedbackForm.get('bookingId')?.touched && feedbackForm.get('bookingId')?.invalid">
+          <i class="bi bi-exclamation-circle-fill"></i> Please enter a valid booking ID.
+        </div>
+      </div>
+
+      <!-- Ratings Grid -->
+      <div class="rating-grid">
+
+        <!-- Food -->
+        <div class="rating-card" [class.rated]="getRating('foodRating') > 0">
+          <div class="card-header-icon food">
+            <i class="bi bi-cup-hot-fill"></i>
+          </div>
+          <div class="rating-details">
+            <label class="form-label">Dining & Food Quality</label>
+            <div class="star-rating">
+              <i *ngFor="let star of ratings" class="bi" 
+                 [ngClass]="star <= getRating('foodRating') ? 'bi-star-fill active-star' : 'bi-star'" 
+                 (click)="setRating('foodRating', star)">
+              </i>
+            </div>
+            <span class="verbal-indicator" [class.active]="getRating('foodRating') > 0">
+              {{ getRatingLabel(getRating('foodRating')) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Room -->
+        <div class="rating-card" [class.rated]="getRating('roomRating') > 0">
+          <div class="card-header-icon room">
+            <i class="bi bi-door-open-fill"></i>
+          </div>
+          <div class="rating-details">
+            <label class="form-label">Room Comfort & Cleanliness</label>
+            <div class="star-rating">
+              <i *ngFor="let star of ratings" class="bi" 
+                 [ngClass]="star <= getRating('roomRating') ? 'bi-star-fill active-star' : 'bi-star'" 
+                 (click)="setRating('roomRating', star)">
+              </i>
+            </div>
+            <span class="verbal-indicator" [class.active]="getRating('roomRating') > 0">
+              {{ getRatingLabel(getRating('roomRating')) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Hygiene -->
+        <div class="rating-card" [class.rated]="getRating('hygieneRating') > 0">
+          <div class="card-header-icon hygiene">
+            <i class="bi bi-shield-check-fill"></i>
+          </div>
+          <div class="rating-details">
+            <label class="form-label">Hygiene & Sanitization</label>
+            <div class="star-rating">
+              <i *ngFor="let star of ratings" class="bi" 
+                 [ngClass]="star <= getRating('hygieneRating') ? 'bi-star-fill active-star' : 'bi-star'" 
+                 (click)="setRating('hygieneRating', star)">
+              </i>
+            </div>
+            <span class="verbal-indicator" [class.active]="getRating('hygieneRating') > 0">
+              {{ getRatingLabel(getRating('hygieneRating')) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Staff -->
+        <div class="rating-card" [class.rated]="getRating('staffRating') > 0">
+          <div class="card-header-icon staff">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div class="rating-details">
+            <label class="form-label">Staff Courtesy & Support</label>
+            <div class="star-rating">
+              <i *ngFor="let star of ratings" class="bi" 
+                 [ngClass]="star <= getRating('staffRating') ? 'bi-star-fill active-star' : 'bi-star'" 
+                 (click)="setRating('staffRating', star)">
+              </i>
+            </div>
+            <span class="verbal-indicator" [class.active]="getRating('staffRating') > 0">
+              {{ getRatingLabel(getRating('staffRating')) }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Overall Rating (Centered & Prominent) -->
+      <div class="overall-rating-container" [class.rated]="getRating('overallRating') > 0">
+        <label class="form-label text-center-label">
+          <i class="bi bi-stars"></i>
+          <span>Overall Stay Experience</span>
+        </label>
+        <div class="star-rating-large">
+          <i *ngFor="let star of ratings" class="bi" 
+             [ngClass]="star <= getRating('overallRating') ? 'bi-star-fill active-star' : 'bi-star'" 
+             (click)="setRating('overallRating', star)">
+          </i>
+        </div>
+        <span class="verbal-indicator-large" [class.active]="getRating('overallRating') > 0">
+          {{ getRatingLabel(getRating('overallRating')) }}
+        </span>
+      </div>
+
+      <!-- Comments Block -->
+      <div class="form-group-comments">
+        <label class="form-label" for="comments">
+          <i class="bi bi-chat-text"></i>
+          <span>Additional Comments & Details</span>
+        </label>
+        <textarea id="comments" rows="4" class="form-textarea-custom" formControlName="comments"
+          placeholder="Tell us what you enjoyed during your stay, or suggest ways we can enhance your next experience..."></textarea>
+        <div class="validation-message" *ngIf="feedbackForm.get('comments')?.touched && feedbackForm.get('comments')?.invalid">
+          <i class="bi bi-exclamation-circle-fill"></i> Please include brief comments (maximum 500 characters).
+        </div>
+      </div>
+
+      <!-- Submit Footer -->
+      <div class="form-action-footer">
+        <button type="submit" class="btn-submit-feedback" [disabled]="feedbackForm.invalid">
+          <i class="bi bi-send-fill"></i>
+          <span>Submit Review</span>
+        </button>
+      </div>
+
+    </form>
+
+  </div>
 
 </div>

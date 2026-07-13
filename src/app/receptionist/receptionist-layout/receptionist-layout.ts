@@ -1,29 +1,32 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../services/login.service';
 
 @Component({
   selector: 'app-receptionist-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, CommonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './receptionist-layout.html',
   styleUrl: './receptionist-layout.css',
 })
 export class ReceptionistLayoutComponent {
-  userName = sessionStorage.getItem('username') || 'Receptionist';
-  isSidebarOpen = false;
+  userName = sessionStorage.getItem('name') || 'Receptionist';
+  isMobileMenuOpen = signal<boolean>(false);
 
   constructor(
     private router: Router,
     private toastr: ToastrService,
     private authService: AuthService,
-  ) {}
+  ) { }
 
-  public toggleSidebar() {
-    this.isSidebarOpen = !this.isSidebarOpen;
+  public toggleMobileMenu() {
+    this.isMobileMenuOpen.update(v => !v);
+  }
+
+  public closeMobileMenu() {
+    this.isMobileMenuOpen.set(false);
   }
 
   public logout() {

@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-available-rooms',
-  imports: [ReactiveFormsModule, CommonModule, RouterLink],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './available-rooms.html',
   styleUrl: './available-rooms.css',
 })
@@ -17,6 +17,8 @@ export class AvailableRooms implements OnInit {
   rooms = signal<Room[]>([]);
   searchForm: FormGroup;
   todayDate: string = new Date().toISOString().split('T')[0];
+  searching = signal<boolean>(false);
+
   constructor(
     private roomService: RoomService,
     private fb: FormBuilder,
@@ -56,19 +58,46 @@ export class AvailableRooms implements OnInit {
       this.searchForm.value.checkOut
     );
 
+    this.searching.set(true);
     this.roomService.RoomApiCall(request).subscribe({
       next: (response: any) => {
-        this.rooms.set(response.data);
+        this.rooms.set(response.data || []);
         console.log(this.rooms());
+        this.searching.set(false);
       },
       error: (error) => {
         console.log(error);
+        this.searching.set(false);
       },
     });
   }
 
   addToCart(room: any) {
     this.cartService.addToCart(room);
+  }
+
+  removeFromCart(room: any) {
+    this.cartService.removeFromCart(room.roomId);
+  }
+
+  isRoomInCart(roomId: number): boolean {
+    return this.cartService.cartRooms().some(r => r.roomId === roomId);
+  }
+
+  getRoomTypeIcon(typeName: string): string {
+    if (!typeName) return 'bi bi-door-open-fill';
+    switch (typeName.toLowerCase()) {
+      case 'standard':
+        return 'bi bi-house-door-fill';
+      case 'deluxe':
+        return 'bi bi-stars';
+      case 'executive':
+        return 'bi bi-gem';
+      case 'familyroom':
+        return 'bi bi-people-fill';
+      default:
+        return 'bi bi-door-open-fill';
+    }
   }
 
   minCheckoutDate = '';

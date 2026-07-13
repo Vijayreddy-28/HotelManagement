@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { Register } from '../../models/register';
 import { GuestRegisterService } from '../../services/guestRegister.service';
-import Swal from 'sweetalert2';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -17,6 +16,8 @@ import { ToastrService } from 'ngx-toastr';
 export class GuestRegisterComponent {
   registerForm: FormGroup;
   successMessage = '';
+  submitting = false;
+
   constructor(
     private router: Router,
     private fb: FormBuilder,
@@ -44,10 +45,13 @@ export class GuestRegisterComponent {
       password: this.registerForm.value.password!,
       aadhaarNumber: this.registerForm.value.aadhaarNumber!,
     };
+
+    this.submitting = true;
     this.gusetService.RegisterApiCall(guest).subscribe({
       next: (response: any) => {
         if (response.statusCode == 400) {
           this.toastr.error(response.message, 'Registration Failed');
+          this.submitting = false;
           return;
         }
         this.toastr.success(response.message, 'Registration Success');
@@ -55,6 +59,8 @@ export class GuestRegisterComponent {
       },
       error: (err) => {
         console.log(err);
+        this.toastr.error('Failed to connect to registration server.', 'API Error');
+        this.submitting = false;
       },
     });
   }

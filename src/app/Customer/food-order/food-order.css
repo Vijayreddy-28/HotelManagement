@@ -444,57 +444,63 @@
 
 /* ── Empty State ─────────────────────────────────────────── */
 .empty-cart-state {
-  text-align: center;
-  background-color: #fff;
-  border: 1.5px dashed #cbd5e1;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 60px 24px;
-  max-width: 500px;
-  margin: 40px auto 0;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .empty-icon-wrapper {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background-color: #f1f5f9;
+  font-size: 3.5rem;
   color: #94a3b8;
-  display: flex;
+  margin-bottom: 20px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.2rem;
-  margin: 0 auto 18px;
+  width: 90px;
+  height: 90px;
+  background-color: #f1f5f9;
+  border-radius: 50%;
+  margin: 0 auto 16px;
 }
 
 .empty-cart-state h3 {
-  margin: 0 0 8px;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #1e293b;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #0f172a;
 }
 
 .empty-cart-state p {
-  margin: 0 0 24px;
-  font-size: 0.9rem;
   color: #64748b;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
 .btn-browse-menu {
   display: inline-flex;
   align-items: center;
-  padding: 11px 22px;
+  gap: 10px;
   background-color: #0f4c81;
-  color: #fff;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
   border-radius: 8px;
-  transition: background-color 0.15s;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
 }
 
 .btn-browse-menu:hover {
   background-color: #0b3b63;
+  transform: translateY(-1px);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
@@ -526,7 +532,314 @@
     width: 100%;
     text-align: center;
   }
-  .items-table th, .items-table td {
-    padding: 12px 14px;
+  .items-table thead {
+    display: none !important;
+  }
+  .items-table, .items-table tbody, .items-table tr, .items-table td {
+    display: block !important;
+    width: 100% !important;
+  }
+  .items-table tr {
+    border-bottom: 1.5px solid #f1f5f9 !important;
+    padding: 16px 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .items-table td {
+    border-bottom: none !important;
+    padding: 2px 0 !important;
+    text-align: left !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .items-table td.unit-price::before {
+    content: "Unit Price";
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+  .items-table td.item-total::before {
+    content: "Total Price";
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+  .items-table td:nth-child(3)::before {
+    content: "Quantity";
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+  .items-table td:nth-child(5)::before {
+    content: "Action";
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.8rem;
   }
 }
+
+/* ── Inline Room Selector Styles ────────────────────────── */
+.loading-rooms-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #1e3a8a;
+  padding: 10px 0;
+}
+
+.room-dropdown-wrapper {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.form-label-select {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.form-select-custom {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #bfdbfe;
+  background-color: #ffffff;
+  color: #1e3a8a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.form-select-custom:focus {
+  border-color: #0f4c81;
+  box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15);
+}
+
+.manual-room-wrapper {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.badge-no-bookings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #9a3412;
+  background-color: #fff7ed;
+  border: 1px solid #ffedd5;
+  padding: 4px 10px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.manual-input-box {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.manual-input-field {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #fed7aa;
+  font-size: 0.9rem;
+  color: #1e293b;
+  outline: none;
+  background-color: #ffffff;
+}
+
+.manual-input-field:focus {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.btn-apply-manual {
+  background-color: #0f4c81;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.btn-apply-manual:hover {
+  background-color: #0b3b63;
+}
+
+.current-selection-badge {
+  margin-top: 14px;
+}
+
+.badge-selected-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #dcfce7;
+  color: #15803d;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #bbf7d0;
+}
+
+/* ==========================================================================
+   CUSTOM BOOKING/ORDER CONFIRMATION MODAL
+   ========================================================================== */
+.booking-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.25s ease forwards;
+}
+
+.booking-modal-card {
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 32px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #f1f5f9;
+  animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.booking-modal-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 16px;
+}
+
+.booking-modal-icon.food-icon {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.booking-modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.booking-modal-text {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  margin-top: 0;
+}
+
+.booking-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-booking-cancel {
+  flex: 1;
+  padding: 11px 20px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-booking-cancel:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btn-booking-confirm {
+  flex: 1;
+  padding: 11px 20px;
+  border-radius: 12px;
+  border: none;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-booking-confirm:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.btn-booking-confirm.food-confirm {
+  background-color: #0f4c81;
+  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.2);
+}
+
+.btn-booking-confirm.food-confirm:hover {
+  background-color: #0b3b63;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 76, 129, 0.3);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { GuestRegisterService } from '../services/guestRegister.service';
@@ -14,12 +14,13 @@ import { HousekeepingService } from '../services/Housekeeping.service';
 import { FeedbackService } from '../services/feedback.service';
 import { BillingService } from '../services/billing.service';
 import { PaymentService } from '../services/payment.service';
+import { NotificationHubService } from '../services/notification.service';
 
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(routes, withRouterConfig({ onSameUrlNavigation: 'reload' })),
     provideHttpClient(),
     GuestRegisterService,
     AuthService,
@@ -32,7 +33,7 @@ export const appConfig: ApplicationConfig = {
     BillingService,
     FeedbackService,
     PaymentService,
-
+    NotificationHubService,
     provideToastr({
       positionClass: 'toast-bottom-right',
       timeOut: 2000,

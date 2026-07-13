@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 import { RoomService } from '../../../services/room.service';
 import { RoomBookingService } from '../../../services/roombooking.service';
@@ -10,7 +12,7 @@ import { ActivityLogResponse, ActivityType } from '../../../models/activitylog.m
 @Component({
   selector: 'app-receptionist-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -19,6 +21,12 @@ export class ReceptionistDashboardComponent implements OnInit {
 
   loadingStats = true;
   loadingActivities = true;
+
+  // Activity Feed pagination
+  activityPage = 1;
+  activityPageSize = 10;
+  activityTotalPages = 1;
+  activityTotalRecords = 0;
 
   // Room Summary API (Room/summary-cards)
   roomStats = {
@@ -49,13 +57,15 @@ export class ReceptionistDashboardComponent implements OnInit {
     private roomService: RoomService,
     private roomBookingService: RoomBookingService,
     private activityLogService: ActivityLogService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router
   ) { }
+
 
   ngOnInit(): void {
     this.loadRoomSummary();
     this.loadBookingSummary();
-    this.loadRecentActivity();
+    this.loadActivities();
   }
 
   private loadRoomSummary(): void {
@@ -99,18 +109,38 @@ export class ReceptionistDashboardComponent implements OnInit {
     });
   }
 
-  private loadRecentActivity(): void {
+  loadActivities(): void {
     this.loadingActivities = true;
-    this.activityLogService.getRecentActivities().subscribe({
-      next: (response) => {
-        this.recentActivities = response || [];
+    this.activityLogService.getActivities(
+      this.activityPage,
+      this.activityPageSize
+    ).subscribe({
+      next: (res: any) => {
+        this.recentActivities = res.data || [];
+        this.activityTotalPages = res.totalPages || 1;
+        this.activityTotalRecords = res.totalRecords || 0;
         this.loadingActivities = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loadingActivities = false;
-        this.toastr.error(err.error?.message || 'Unable to load recent activity.', 'API Error');
+        this.toastr.error(err.error?.message || 'Unable to load activity feed.', 'API Error');
       }
     });
+  }
+
+
+  prevActivityPage(): void {
+    if (this.activityPage > 1) {
+      this.activityPage--;
+      this.loadActivities();
+    }
+  }
+
+  nextActivityPage(): void {
+    if (this.activityPage < this.activityTotalPages) {
+      this.activityPage++;
+      this.loadActivities();
+    }
   }
 
   getActivityIcon(type: ActivityType): string {
@@ -139,5 +169,9 @@ export class ReceptionistDashboardComponent implements OnInit {
       case ActivityType.User: return 'bg-primary-subtle text-primary';
       default: return 'bg-light text-dark';
     }
+  }
+
+  quickNavigate(routePath: string): void {
+    this.router.navigate([routePath]);
   }
 }

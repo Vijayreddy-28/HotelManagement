@@ -1,0 +1,313 @@
+<div class="food-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="food-header">
+    <div class="food-header-left">
+      <h1 class="food-title">Kitchen & Menu Console</h1>
+      <p class="food-subtitle">Update the restaurant menu catalog, manage item availability, and track live kitchen orders.</p>
+    </div>
+    <button class="btn-add-item" (click)="openAddModal()" id="add-menu-item-btn">
+      <i class="bi bi-plus-circle-fill"></i>
+      <span>Add Menu Item</span>
+    </button>
+  </div>
+
+  <!-- ===== STATS ROW ===== -->
+  <div class="food-stats-row">
+    <div class="food-stat-card">
+      <div class="stat-icon-wrap icon-blue">
+        <i class="bi bi-list-ul"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Total Menu Items</span>
+        <span class="stat-value">{{ totalMenuItems }}</span>
+      </div>
+    </div>
+    <div class="food-stat-card">
+      <div class="stat-icon-wrap icon-green">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Available Items</span>
+        <span class="stat-value">{{ availableItems }}</span>
+      </div>
+    </div>
+    <div class="food-stat-card">
+      <div class="stat-icon-wrap icon-red">
+        <i class="bi bi-clock-history"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Pending Orders</span>
+        <span class="stat-value">{{ pendingOrders }}</span>
+      </div>
+    </div>
+    <div class="food-stat-card">
+      <div class="stat-icon-wrap icon-amber">
+        <i class="bi bi-fire"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Orders In Progress</span>
+        <span class="stat-value">{{ deliveringOrders }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TWO-COLUMN WORKSPACE: MENU CATALOG (LEFT/TOP) & LIVE ORDERS (RIGHT/BOTTOM) ===== -->
+  <div class="food-workspace-grid">
+
+    <!-- LEFT COLUMN: RESTAURANT MENU CATALOG -->
+    <div class="menu-catalog-panel panel-card">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <span class="panel-title"><i class="bi bi-menu-button-wide-fill"></i> Restaurant Menu Catalog</span>
+        </div>
+        <div class="panel-header-right">
+          <div class="search-wrap">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search menu..." [(ngModel)]="menuSearch" (ngModelChange)="filterMenu()" />
+            <button class="clear-search-btn" *ngIf="menuSearch" (click)="menuSearch=''; filterMenu()">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading skeleton for menu -->
+      <div class="menu-skeleton-grid" *ngIf="loadingMenu">
+        <div class="menu-skeleton-card" *ngFor="let i of [1,2,3,4]">
+          <div class="sk-img"></div>
+          <div class="sk-line w60"></div>
+          <div class="sk-line w40"></div>
+          <div class="sk-line w80"></div>
+        </div>
+      </div>
+
+      <!-- Menu Items Grid -->
+      <div class="menu-items-grid" *ngIf="!loadingMenu && filteredMenuItems.length > 0">
+        <div class="menu-item-card" *ngFor="let item of filteredMenuItems" [class.menu-item-unavailable]="item.isAvailable === false">
+          <div class="menu-item-image-area">
+            <img [src]="getFoodImageUrl(item)" alt="{{ item.itemName }}" class="menu-item-img">
+            <span class="menu-item-cat-badge">{{ getCategoryLabel(item.category) }}</span>
+          </div>
+
+          <div class="menu-item-body">
+            <h4 class="menu-item-name" [title]="item.itemName">{{ item.itemName }}</h4>
+            <div class="menu-item-meta">
+              <span class="menu-item-price">₹{{ item.price | number }}</span>
+              <span class="availability-status" [class.status-available]="item.isAvailable !== false" [class.status-unavailable]="item.isAvailable === false">
+                {{ item.isAvailable !== false ? 'On Menu' : 'Off Menu' }}
+              </span>
+            </div>
+            <div class="menu-item-actions">
+              <button class="btn-action-edit" (click)="openEditModal(item)">
+                <i class="bi bi-pencil-fill"></i> Edit
+              </button>
+              <button class="btn-action-toggle" [class.btn-toggle-disable]="item.isAvailable !== false" [class.btn-toggle-enable]="item.isAvailable === false" (click)="toggleItemAvailability(item)">
+                <i class="bi" [ngClass]="item.isAvailable !== false ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
+                {{ item.isAvailable !== false ? 'Disable' : 'Enable' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty menu catalog -->
+      <div class="menu-empty-state" *ngIf="!loadingMenu && filteredMenuItems.length === 0">
+        <i class="bi bi-egg-fried"></i>
+        <h5>No Menu Items Found</h5>
+        <p>Try searching for a different item or add a new menu item using the button above.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: LIVE KITCHEN ORDERS -->
+    <div class="live-orders-panel panel-card">
+      <div class="panel-header">
+        <div class="panel-header-left">
+          <span class="panel-title">
+            <i class="bi bi-receipt-cutoff"></i> Live Kitchen Orders
+            <span class="pending-count-badge" *ngIf="pendingOrders > 0">{{ pendingOrders }} Pending</span>
+          </span>
+        </div>
+        <div class="panel-header-right flex-row gap-2">
+          <div class="search-wrap max-w-200">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search orders..." [(ngModel)]="orderSearch" (ngModelChange)="filterOrders()" />
+            <button class="clear-search-btn" *ngIf="orderSearch" (click)="orderSearch=''; filterOrders()">
+              <i class="bi bi-x-circle-fill"></i>
+            </button>
+          </div>
+          <button class="btn-refresh-orders" (click)="loadOrders()" type="button" title="Refresh Live Orders">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading skeleton for orders -->
+      <div class="orders-skeleton" *ngIf="loadingOrders">
+        <div class="sk-order-row" *ngFor="let i of [1,2,3,4]">
+          <div class="sk-line w20"></div>
+          <div class="sk-line w30"></div>
+          <div class="sk-line w40"></div>
+          <div class="sk-line w10"></div>
+        </div>
+      </div>
+
+      <!-- Orders List Table -->
+      <div class="orders-table-wrapper" *ngIf="!loadingOrders && filteredOrders.length > 0">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th class="th-order-id">Order ID</th>
+              <th class="th-room">Room</th>
+              <th class="th-items">Items Ordered</th>
+              <th class="th-status">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of filteredOrders" class="order-table-row">
+              <td class="td-order-id">
+                <span class="order-id-badge">#{{ order.orderId }}</span>
+              </td>
+              <td class="td-room">
+                <span class="room-number-badge">
+                  <i class="bi bi-door-open-fill"></i> Rm {{ order.roomNumber }}
+                </span>
+              </td>
+              <td class="td-items">
+                <div class="order-items-pills">
+                  <span class="order-item-pill" *ngFor="let it of order.items">
+                    {{ it.foodName }} <span class="quantity-tag">×{{ it.quantity }}</span>
+                  </span>
+                  <span *ngIf="!order.items || order.items.length === 0" class="empty-item-placeholder">—</span>
+                </div>
+              </td>
+              <td class="td-status">
+                <span class="order-status-badge" [ngClass]="getOrderStatusClass(order.status)">
+                  <span class="status-dot"></span>
+                  {{ order.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty active orders -->
+      <div class="orders-empty-state" *ngIf="!loadingOrders && filteredOrders.length === 0">
+        <i class="bi bi-basket3"></i>
+        <h5>No Active Orders</h5>
+        <p>The kitchen order queue is completely clear.</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============================================================
+     ADD / EDIT MENU ITEM MODAL
+     ============================================================ -->
+<div class="menu-modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="menu-modal-card" (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="menu-modal-header">
+      <div class="menu-modal-title-row">
+        <div class="menu-modal-icon"><i class="bi bi-egg-fried"></i></div>
+        <div>
+          <h2 class="menu-modal-title">{{ editMode ? 'Edit Menu Item' : 'Add New Menu Item' }}</h2>
+          <p class="menu-modal-subtitle">Configure restaurant menu catalog offerings</p>
+        </div>
+      </div>
+      <button class="menu-close-btn" (click)="closeAddModal()" type="button" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Form -->
+    <form [formGroup]="addForm" (ngSubmit)="submitMenu()">
+      <div class="menu-modal-body">
+        <div class="menu-form-grid">
+
+          <!-- Item Name -->
+          <div class="menu-field span-full">
+            <label class="menu-label">Item Name</label>
+            <div class="menu-input-wrap">
+              <i class="bi bi-bookmark-fill menu-input-icon"></i>
+              <input type="text" class="menu-input" formControlName="itemName" placeholder="e.g. Paneer Butter Masala" />
+            </div>
+            <span class="menu-error" *ngIf="addForm.get('itemName')?.touched && addForm.get('itemName')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Item name required (min 3 characters).
+            </span>
+          </div>
+
+          <!-- Category -->
+          <div class="menu-field">
+            <label class="menu-label">Category</label>
+            <div class="menu-input-wrap">
+              <i class="bi bi-tag-fill menu-input-icon"></i>
+              <select class="menu-input menu-select" formControlName="category">
+                <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="menu-field">
+            <label class="menu-label">Price (₹)</label>
+            <div class="menu-input-wrap">
+              <i class="bi bi-currency-rupee menu-input-icon"></i>
+              <input type="number" class="menu-input" formControlName="price" placeholder="250" />
+            </div>
+            <span class="menu-error" *ngIf="addForm.get('price')?.touched && addForm.get('price')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Price must be at least ₹1.
+            </span>
+          </div>
+
+          <!-- Image Upload (only for new items) -->
+          <div class="menu-field span-full" *ngIf="!editMode">
+            <label class="menu-label">Item Image (Optional)</label>
+            <div class="image-upload-wrap">
+              <input type="file" class="menu-file-input" accept="image/*" (change)="onFileChange($event)" id="food-image-file" />
+              <label for="food-image-file" class="image-upload-label">
+                <i class="bi bi-cloud-arrow-up-fill upload-icon"></i>
+                <span class="upload-text">{{ selectedFile ? selectedFile.name : 'Choose a file or drag it here' }}</span>
+                <span class="upload-subtext">Supports PNG, JPG, JPEG up to 2MB</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Availability Switch -->
+          <div class="menu-field span-full">
+            <div class="availability-switch-card">
+              <div class="switch-left">
+                <span class="switch-title">Active on Menu</span>
+                <span class="switch-desc">Determine if guests can order this item right now.</span>
+              </div>
+              <div class="switch-right">
+                <label class="toggle-switch">
+                  <input type="checkbox" formControlName="isAvailable" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="menu-modal-footer">
+        <button type="button" class="btn-menu-cancel" (click)="closeAddModal()">Cancel</button>
+        <button type="submit" class="btn-menu-submit" [disabled]="submittingMenu" id="submit-menu-item-btn">
+          <span *ngIf="!submittingMenu">
+            <i class="bi me-2" [ngClass]="editMode ? 'bi-check-circle-fill' : 'bi-plus-circle-fill'"></i>
+            {{ editMode ? 'Save Changes' : 'Add Menu Item' }}
+          </span>
+          <span *ngIf="submittingMenu" class="spinner-border spinner-border-sm"></span>
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

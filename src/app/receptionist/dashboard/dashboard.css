@@ -1,229 +1,535 @@
-/* ==========================================
-   Dashboard Container & Global Vibrancy
-   ========================================== */
-.dashboard-container {
-  background: linear-gradient(180deg, #f0f4f9 0%, #e9eef5 100%);
+/* =======================================================
+   RECEPTIONIST DASHBOARD — UNIFIED ADMIN DASHBOARD THEME
+   ======================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.receptionist-dashboard {
+  padding: 28px 32px 60px;
   min-height: 100vh;
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  background: #f4f6fb;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-/* Vivid Title Styling */
-.welcome-title {
-  background: linear-gradient(45deg, #1e293b, #4f46e5);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.03em;
+/* ===== HEADER ===== */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.date-badge {
-  background: #ffffff !important;
-  border: 2px solid #e0e7ff !important;
-  color: #4f46e5 !important;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08) !important;
+.dash-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.04em;
+  margin: 0 0 4px;
 }
 
-/* ==========================================
-   Hyper-Colorful Card Layouts
-   ========================================== */
-.dashboard-container .card {
-  border: none !important;
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+.dash-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+}
+
+/* ===== KPI METRIC CARDS ===== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  border: 1px solid #eef2f6;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.015);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
-/* Dynamic Hover Lift & Soft Glow */
-.dashboard-container .row.g-3 .card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+.metric-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #0f4c81, #1e78c8);
+  border-radius: 0 0 20px 20px;
+  transition: width 0.3s ease;
 }
 
-/* Scale up icons on hover */
-.dashboard-container .card:hover .rounded-circle i {
-  transform: scale(1.2) rotate(5deg);
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  border-color: #dce6f0;
 }
 
-.dashboard-container .card .rounded-circle i {
-  transition: transform 0.3s ease;
-  display: inline-block;
+.metric-card:hover::after {
+  width: 100%;
 }
 
-/* --- Specific Color Customization for Each Card --- */
-
-/* Card 1: Revenue (Emerald Spark) */
-.dashboard-container .row.g-3>div:nth-child(1) .card {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3) !important;
+/* Accent Revenue Card */
+.accent-card {
+  background: linear-gradient(135deg, #0f4c81 0%, #1e78c8 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 25px rgba(15, 76, 129, 0.3) !important;
 }
 
-/* Card 2: Check-Ins (Electric Indigo) */
-.dashboard-container .row.g-3>div:nth-child(2) .card {
-  background: #f5f3ff !important;
-  border-left: 5px solid #6366f1 !important;
+.accent-card::after { display: none; }
+
+.accent-card .metric-label { color: rgba(255,255,255,0.8) !important; }
+.accent-card .metric-value { color: #ffffff !important; }
+.accent-card .metric-badge { background-color: rgba(255,255,255,0.15) !important; color: rgba(255,255,255,0.9) !important; }
+.accent-card .metric-icon-wrap { background-color: rgba(255,255,255,0.15) !important; color: #ffffff !important; }
+
+/* Icon Wrappers */
+.metric-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
 }
 
-.dashboard-container .row.g-3>div:nth-child(2) .bg-primary-subtle {
-  background: #e0e7ff !important;
-  color: #4f46e5 !important;
+.accent-icon { background: rgba(255,255,255,0.2); color: #ffffff; }
+.icon-blue   { background: #eff6ff; color: #1d4ed8; }
+.icon-amber  { background: #fffbeb; color: #b45309; }
+.icon-teal   { background: #f0fdfa; color: #0d9488; }
+.icon-cyan   { background: #ecfeff; color: #0891b2; }
+.icon-red    { background: #fff1f2; color: #be123c; }
+.icon-pink   { background: #fdf4ff; color: #a21caf; }
+.icon-violet { background: #f5f3ff; color: #6d28d9; }
+
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.dashboard-container .row.g-3>div:nth-child(2) h3 {
-  color: #312e81 !important;
+.metric-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
-/* Card 3: Check-Outs (Vivid Amber) */
-.dashboard-container .row.g-3>div:nth-child(3) .card {
-  background: #fffbeb !important;
-  border-left: 5px solid #f59e0b !important;
+.metric-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 
-.dashboard-container .row.g-3>div:nth-child(3) .bg-warning-subtle {
-  background: #fef3c7 !important;
-  color: #b45309 !important;
+.metric-denom {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #94a3b8;
 }
 
-.dashboard-container .row.g-3>div:nth-child(3) h3 {
-  color: #78350f !important;
+.metric-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-top: 4px;
 }
 
-/* Card 4: In-House Guests (Teal Bliss) */
-.dashboard-container .row.g-3>div:nth-child(4) .card {
-  background: #f0fdfa !important;
-  border-left: 5px solid #0d9488 !important;
+.badge-green  { background: #f0fdf4; color: #16a34a; }
+.badge-blue   { background: #eff6ff; color: #1d4ed8; }
+.badge-amber  { background: #fffbeb; color: #b45309; }
+.badge-teal   { background: #f0fdfa; color: #0d9488; }
+.badge-cyan   { background: #ecfeff; color: #0891b2; }
+.badge-red    { background: #fff1f2; color: #be123c; }
+.badge-pink   { background: #fdf4ff; color: #a21caf; }
+.badge-violet { background: #f5f3ff; color: #6d28d9; }
+
+/* ===== TWO-PANEL ROW ===== */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
 }
 
-.dashboard-container .row.g-3>div:nth-child(4) .bg-success-subtle {
-  background: #ccfbf1 !important;
-  color: #0f766e !important;
+/* ===== SHARED PANEL CARD ===== */
+.panel-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.015);
 }
 
-.dashboard-container .row.g-3>div:nth-child(4) h3 {
-  color: #115e59 !important;
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-/* Card 5: Available Rooms (Sky Cyan) */
-.dashboard-container .row.g-3>div:nth-child(5) .card {
-  background: #f0f9ff !important;
-  border-left: 5px solid #0284c7 !important;
+.panel-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.dashboard-container .row.g-3>div:nth-child(5) .bg-info-subtle {
-  background: #e0f2fe !important;
-  color: #0369a1 !important;
+.panel-title i {
+  color: #0f4c81;
 }
 
-.dashboard-container .row.g-3>div:nth-child(5) h3 {
-  color: #0c4a6e !important;
+.panel-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0f4c81;
+  background: #eef6ff;
+  border: 1px solid #c7ddf5;
+  padding: 4px 10px;
+  border-radius: 10px;
 }
 
-/* Card 6: Occupied Rooms (Rose Crimson) */
-.dashboard-container .row.g-3>div:nth-child(6) .card {
-  background: #fff5f5 !important;
-  border-left: 5px solid #e11d48 !important;
+/* ===== OCCUPANCY RING ===== */
+.occupancy-ring-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 24px;
 }
 
-.dashboard-container .row.g-3>div:nth-child(6) .bg-danger-subtle {
-  background: #ffe4e6 !important;
-  color: #be123c !important;
+.ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.dashboard-container .row.g-3>div:nth-child(6) h3 {
-  color: #881337 !important;
+.ring-bg {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 12;
 }
 
-/* Card 7: Dirty Rooms (Fiery Orange/Red) */
-.dashboard-container .row.g-3>div:nth-child(7) .card {
-  background: #fdf2f8 !important;
-  border-left: 5px solid #db2777 !important;
+.ring-fill {
+  fill: none;
+  stroke: #0f4c81;
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 440;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dashboard-container .row.g-3>div:nth-child(7) .bg-danger-subtle {
-  background: #fce7f3 !important;
-  color: #be185d !important;
+.ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
 
-.dashboard-container .row.g-3>div:nth-child(7) h3 {
-  color: #831843 !important;
+.ring-pct {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.04em;
 }
 
-/* Card 8: Total Bookings (Cool Violet) */
-.dashboard-container .row.g-3>div:nth-child(8) .card {
-  background: #faf5ff !important;
-  border-left: 5px solid #9333ea !important;
+.ring-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
 }
 
-.dashboard-container .row.g-3>div:nth-child(8) .bg-secondary-subtle {
-  background: #f3e8ff !important;
-  color: #6b21a8 !important;
+/* Occupancy Legend */
+.occupancy-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.dashboard-container .row.g-3>div:nth-child(8) h3 {
-  color: #581c87 !important;
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.83rem;
+  color: #334155;
 }
 
-
-/* ==========================================
-   Vibrant Activity Feed & Timeline
-   ========================================== */
-.timeline-container {
-  border-left: 3px dashed #cbd5e1 !important;
+.legend-row strong {
+  margin-left: auto;
+  font-weight: 700;
+  color: #0f172a;
 }
 
-.timeline-item {
-  margin-bottom: 1.75rem !important;
+.leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.timeline-body {
+.dot-occupied    { background: #0f4c81; }
+.dot-available   { background: #22c55e; }
+.dot-cleaning    { background: #f59e0b; }
+.dot-maintenance { background: #ef4444; }
+
+/* ===== FILTER BADGES GROUP ===== */
+.filter-badges-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-badge-btn {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 1rem 1.25rem !important;
-  transition: all 0.25s ease;
+  color: #64748b;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.timeline-item:hover .timeline-body {
-  background: #ffffff;
-  border-color: #6366f1;
-  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.06);
-  transform: translateX(4px);
+.filter-badge-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
-/* High-Contrast Timeline Micro-Badges */
-.timeline-item .rounded-circle {
-  box-shadow: 0 0 0 6px #ffffff, 0 4px 10px rgba(0, 0, 0, 0.15) !important;
-  color: #ffffff !important;
+.filter-badge-btn.active {
+  background: #0f4c81;
+  border-color: #0f4c81;
+  color: #ffffff;
+  box-shadow: 0 3px 8px rgba(15, 76, 129, 0.15);
 }
 
-/* Angular CSS Class Injection Fallbacks for Colored Indicators */
-.timeline-item .bg-success,
-.timeline-item .text-success {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
+/* ===== ACTIVITY FEED ===== */
+.timeline-scroller {
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.timeline-item .bg-danger,
-.timeline-item .text-danger {
-  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+.timeline-scroller::-webkit-scrollbar {
+  width: 6px;
+}
+.timeline-scroller::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+.timeline-scroller::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 8px;
 }
 
-.timeline-item .bg-warning,
-.timeline-item .text-warning {
-  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+.activity-feed {
+  display: flex;
+  flex-direction: column;
 }
 
-.timeline-item .bg-primary,
-.timeline-item .text-primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+.activity-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
 }
 
-.timeline-item .bg-info,
-.timeline-item .text-info {
-  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+.activity-dot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
 }
 
-/* System Badge Pill Color */
-.badge.bg-primary-subtle {
-  background: linear-gradient(45deg, #e0e7ff, #eef2ff) !important;
-  color: #4338ca !important;
-  border: 1px solid #c7d2fe !important;
+.activity-icon-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.activity-connector {
+  width: 2px;
+  flex: 1;
+  background: #f1f5f9;
+  min-height: 20px;
+}
+
+.activity-row:last-child .activity-connector {
+  display: none;
+}
+
+.activity-content {
+  flex: 1;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.activity-row:last-child .activity-content {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activity-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  gap: 8px;
+}
+
+.activity-title {
+  font-size: 0.88rem;
   font-weight: 700;
+  color: #0f172a;
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.activity-desc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.activity-empty {
+  text-align: center;
+  padding: 48px 0;
+  color: #94a3b8;
+}
+
+.activity-empty i {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.activity-empty h5 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.activity-empty p {
+  font-size: 0.82rem;
+}
+
+/* Activity type background/text colors matching admin dashboard */
+.activity-icon-dot.bg-primary   { background: #eff6ff; color: #1d4ed8; }
+.activity-icon-dot.bg-success   { background: #f0fdf4; color: #16a34a; }
+.activity-icon-dot.bg-danger    { background: #fff1f2; color: #be123c; }
+.activity-icon-dot.bg-warning   { background: #fffbeb; color: #b45309; }
+.activity-icon-dot.bg-info      { background: #ecfeff; color: #0891b2; }
+.activity-icon-dot.bg-secondary { background: #f8fafc; color: #475569; }
+.activity-icon-dot.bg-dark      { background: #f1f5f9; color: #1e293b; }
+.activity-icon-dot.bg-primary-subtle { background: #eff6ff; color: #1d4ed8; }
+
+/* ===== LOADING SKELETONS ===== */
+.sk-pill {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 20px;
+  height: 16px;
+}
+
+.sk-pill.w50 { width: 50%; }
+
+.sk-line {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  height: 12px;
+}
+
+.sk-line.w100 { height: 16px; width: 100%; }
+.sk-line.w30 { width: 30%; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1200px) {
+  .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 992px) {
+  .dashboard-row { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .occupancy-ring-wrapper { width: 140px; height: 140px; }
+}
+
+@media (max-width: 576px) {
+  .receptionist-dashboard { padding: 16px 12px 48px; gap: 20px; }
+  .dash-title { font-size: 1.5rem; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .metric-card { padding: 18px; }
+  .activity-top-row { flex-direction: column; align-items: flex-start; }
+}
+
+.feed-loading {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
 }

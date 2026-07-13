@@ -1,81 +1,204 @@
 <div class="app-layout">
-  <header class="app-header">
-    <div class="brand-wrapper">
-      <div class="brand-logo">
-        <i class="bi bi-buildings-fill"></i>
+  
+  <!-- ===================== PREMIUM NAVIGATION BAR ===================== -->
+  <header class="app-navbar">
+    <div class="navbar-container">
+      
+      <!-- Brand Logo & Name -->
+      <div class="brand-wrapper" routerLink="/customer/rooms" style="cursor: pointer;">
+        <div class="brand-logo">
+          <i class="bi bi-buildings-fill"></i>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-name">The Canopy Retreat</h1>
+          <span class="brand-subtitle">Guest Portal</span>
+        </div>
       </div>
-      <h1 class="brand-name">The Canopy Retreat</h1>
-    </div>
 
-    <div class="header-actions">
-      <button class="icon-action-btn" aria-label="Notifications">
-        <i class="bi bi-bell"></i>
+      <!-- Navigation links in the middle (Desktop only) -->
+      <nav class="navbar-links">
+        <a class="nav-item-link" routerLink="/customer/rooms" routerLinkActive="is-active">
+          <i class="bi bi-door-open"></i>
+          <span>Rooms</span>
+        </a>
+        <a class="nav-item-link" routerLink="/customer/food" routerLinkActive="is-active">
+          <i class="bi bi-cup-hot"></i>
+          <span>Food Orders</span>
+        </a>
+        <a class="nav-item-link" routerLink="/customer/feedback" routerLinkActive="is-active">
+          <i class="bi bi-chat-dots"></i>
+          <span>Feedback</span>
+        </a>
+      </nav>
+
+      <!-- Right Action items (Desktop only) -->
+      <div class="navbar-actions">
+        
+        <!-- Room Cart Button -->
+        <a class="action-btn-link" routerLink="/customer/cart" routerLinkActive="is-active" title="Room Cart">
+          <i class="bi bi-cart3"></i>
+          <span class="cart-label">Room Cart</span>
+          <span class="badge badge-accent" *ngIf="roomCartCount() > 0">{{ roomCartCount() }}</span>
+        </a>
+
+        <!-- Food Cart Button -->
+        <a class="action-btn-link" routerLink="/customer/foodcart" routerLinkActive="is-active" title="Food Cart">
+          <i class="bi bi-egg-fried"></i>
+          <span class="cart-label">Food Cart</span>
+          <span class="badge badge-warning" *ngIf="foodCartCount() > 0">{{ foodCartCount() }}</span>
+        </a>
+
+        <!-- Notifications Dropdown -->
+        <div class="notifications-dropdown-wrapper">
+          <button class="action-btn-link btn-notifications-trigger" (click)="toggleNotifications($event)" title="Notifications" [class.panel-open]="showNotificationsPanel()">
+            <i class="bi bi-bell"></i>
+            <span class="badge badge-danger" *ngIf="unreadNotificationsCount() > 0">
+              {{ unreadNotificationsCount() }}
+            </span>
+          </button>
+
+          <!-- Notifications Panel Dropdown -->
+          <div class="notifications-panel-dropdown" *ngIf="showNotificationsPanel()">
+            <div class="dropdown-header">
+              <span class="header-title">Notifications</span>
+              <button class="btn-mark-all-read" (click)="markAllAsRead($event)" *ngIf="unreadNotificationsCount() > 0">
+                Mark all as read
+              </button>
+            </div>
+            
+            <hr class="dropdown-divider">
+            
+            <div class="notifications-list-container">
+              <!-- Empty State -->
+              <div class="notification-empty-state" *ngIf="notificationsList().length === 0">
+                <i class="bi bi-bell-slash text-muted"></i>
+                <p>No notifications yet</p>
+              </div>
+
+              <!-- Notifications list -->
+              <div class="notification-item-card" 
+                   *ngFor="let notification of notificationsList()" 
+                   [class.unread]="!notification.isRead"
+                   (click)="onNotificationClick(notification, $event)">
+                <div class="notification-icon-wrapper" [ngClass]="getNotificationIconClass(notification.type)">
+                  <i class="bi" [ngClass]="getNotificationIcon(notification.type)"></i>
+                </div>
+                <div class="notification-item-content">
+                  <p class="notification-message">{{ notification.message }}</p>
+                  <span class="notification-time">{{ formatTime(notification.createdAt) }}</span>
+                </div>
+                <span class="unread-dot-indicator" *ngIf="!notification.isRead"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Dropdown -->
+        <div class="profile-dropdown-wrapper">
+          <div class="profile-trigger">
+            <div class="profile-avatar">
+              {{ userName.charAt(0).toUpperCase() }}
+              <span class="online-indicator"></span>
+            </div>
+            <div class="profile-details-text">
+              <span class="user-display-name">{{ userName }}</span>
+              <span class="user-display-role">Guest</span>
+            </div>
+            <i class="bi bi-chevron-down dropdown-arrow"></i>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div class="profile-dropdown-menu">
+            <div class="dropdown-header">
+              <p class="dropdown-user-name">{{ userName }}</p>
+              <p class="dropdown-user-role">Valued Guest</p>
+            </div>
+            <hr class="dropdown-divider">
+            <a class="dropdown-item" routerLink="/customer/bookings">
+              <i class="bi bi-calendar2-check"></i>
+              <span>My Bookings</span>
+            </a>
+            <button class="dropdown-item logout-item" (click)="logout()" type="button">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Hamburger Menu Toggle Button (Mobile only) -->
+      <button type="button" class="btn-hamburger-menu" (click)="toggleMobileMenu()" aria-label="Toggle Navigation Menu">
+        <i class="bi" [ngClass]="isMobileMenuOpen() ? 'bi-x-lg' : 'bi-list'"></i>
       </button>
 
-      <div class="user-profile-dropdown">
-        <div class="avatar">
-          <i class="bi bi-person-circle"></i>
-        </div>
-        <div class="user-meta">
-          <span class="user-name">{{ userName || 'Guest User' }}</span>
-          <span class="user-role">Customer</span>
-        </div>
-      </div>
     </div>
   </header>
 
+  <!-- ===================== MOBILE NAVIGATION DROPDOWN MENU ===================== -->
+  <div class="mobile-dropdown-overlay" [class.open]="isMobileMenuOpen()">
+    <nav class="mobile-menu-links">
+      <a class="mobile-menu-link" routerLink="/customer/rooms" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <i class="bi bi-door-open-fill"></i>
+        <span>Rooms Catalog</span>
+      </a>
+      <a class="mobile-menu-link" routerLink="/customer/food" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <i class="bi bi-cup-hot-fill"></i>
+        <span>Food Orders</span>
+      </a>
+      <a class="mobile-menu-link" routerLink="/customer/feedback" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <i class="bi bi-chat-dots-fill"></i>
+        <span>Share Feedback</span>
+      </a>
+      <hr class="menu-divider">
+      <a class="mobile-menu-link" routerLink="/customer/cart" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <div class="mobile-icon-badge-wrapper">
+          <i class="bi bi-cart3"></i>
+          <span class="mobile-badge" *ngIf="roomCartCount() > 0">{{ roomCartCount() }}</span>
+        </div>
+        <span>Rooms Cart</span>
+      </a>
+      <a class="mobile-menu-link" routerLink="/customer/foodcart" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <div class="mobile-icon-badge-wrapper">
+          <i class="bi bi-egg-fried"></i>
+          <span class="mobile-badge warning" *ngIf="foodCartCount() > 0">{{ foodCartCount() }}</span>
+        </div>
+        <span>Food Cart</span>
+      </a>
+      <a class="mobile-menu-link" routerLink="/customer/bookings" routerLinkActive="is-active" (click)="closeMobileMenu()">
+        <i class="bi bi-calendar2-check-fill"></i>
+        <span>My Bookings</span>
+      </a>
+      <hr class="menu-divider">
+      <button class="mobile-menu-link logout-item" (click)="logout(); closeMobileMenu()" type="button">
+        <i class="bi bi-box-arrow-right"></i>
+        <span>Sign Out</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===================== VIEWPORT CONTAINER ===================== -->
   <div class="app-viewport">
-    <aside class="app-sidebar">
-      <div class="sidebar-nav-wrapper">
-        <div class="menu-header">CUSTOMER MANAGEMENT</div>
-
-        <nav class="sidebar-nav">
-          <ul class="nav-list">
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/customer/rooms" routerLinkActive="is-active">
-                <i class="bi bi-door-open nav-icon"></i>
-                <span class="nav-label">Room Booking</span>
-              </a>
-            </li>
-
-
-
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/customer/food" routerLinkActive="is-active">
-                <i class="bi bi-cup-hot nav-icon"></i>
-                <span class="nav-label">Food Orders</span>
-              </a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/customer/bills" routerLinkActive="is-active">
-                <i class="bi bi-receipt nav-icon"></i>
-                <span class="nav-label">Bills & Payments</span>
-              </a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/customer/feedback" routerLinkActive="is-active">
-                <i class="bi bi-chat-dots nav-icon"></i>
-                <span class="nav-label">Feedback</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-
-      <div class="sidebar-footer">
-        <button class="btn-logout" (click)="logout()" type="button">
-          <i class="bi bi-box-arrow-right"></i>
-          <span>Sign Out</span>
-        </button>
-      </div>
-    </aside>
-
     <main class="app-content-workspace">
       <div class="workspace-container">
         <router-outlet></router-outlet>
       </div>
     </main>
   </div>
+
+  <!-- ===================== CUSTOM LOGOUT CONFIRMATION MODAL ===================== -->
+  <div class="logout-modal-overlay" *ngIf="showLogoutConfirm()">
+    <div class="logout-modal-card">
+      <div class="logout-modal-icon">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <h3 class="logout-modal-title">Sign Out</h3>
+      <p class="logout-modal-text">Are you sure you want to end your current session at The Canopy Retreat?</p>
+      <div class="logout-modal-actions">
+        <button type="button" class="btn-logout-cancel" (click)="cancelLogout()">Cancel</button>
+        <button type="button" class="btn-logout-confirm" (click)="confirmLogout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
 </div>

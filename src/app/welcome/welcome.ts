@@ -11,7 +11,7 @@ export class WelcomeComponent {
   constructor(private router: Router) {}
 
   employeeLogin() {
-    this.router.navigate(['/employee-login']);
+    this.router.navigate(['/login']);
   }
 
   guestRegister() {

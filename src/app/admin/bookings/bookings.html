@@ -1,0 +1,146 @@
+<div class="bookings-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="bk-header">
+    <div class="bk-header-left">
+      <h1 class="bk-title">Booking Ledger</h1>
+      <p class="bk-subtitle">Complete historical record of all room booking transactions across the property.</p>
+    </div>
+    <div class="bk-count-badge">
+      <i class="bi bi-journal-bookmark-fill"></i>
+      <span>{{ allBookings().length }} Total Bookings</span>
+    </div>
+  </div>
+
+  <!-- ===== STATS ROW ===== -->
+  <div class="bk-stats-row">
+    <div class="bk-stat-card" *ngFor="let tab of statusTabs" (click)="setStatus(tab)" [class.bk-stat-active]="activeStatus === tab">
+      <div class="stat-icon-wrap" [ngClass]="getStatIconClass(tab)">
+        <i class="bi" [ngClass]="getStatIcon(tab)"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">{{ tab === 'CheckedIn' ? 'Checked In' : tab === 'CheckedOut' ? 'Checked Out' : tab }}</span>
+        <span class="stat-value">{{ getStatusCount(tab) }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeStatus === tab"></div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="bk-search-card">
+    <div class="bk-search-inner">
+      <i class="bi bi-search bk-search-icon"></i>
+      <input type="text" class="bk-search-input" placeholder="Search by booking ID, guest name, or status..."
+        [(ngModel)]="searchText" id="booking-search" />
+      <button class="bk-clear-btn" *ngIf="searchText" (click)="searchText=''" type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="bk-skeleton-wrap" *ngIf="loading">
+    <div class="bk-skeleton-row" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="sk-id"></div>
+      <div class="sk-lines">
+        <div class="sk-line w50"></div>
+        <div class="sk-line w30"></div>
+      </div>
+      <div class="sk-line w40 sk-cell"></div>
+      <div class="sk-line w30 sk-cell"></div>
+      <div class="sk-line w30 sk-cell"></div>
+      <div class="sk-pill sk-cell"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOOKINGS TABLE ===== -->
+  <div class="bk-table-card" *ngIf="!loading && filteredBookings().length > 0">
+    <div class="table-responsive">
+      <table class="bk-table">
+        <thead>
+          <tr>
+            <th class="th-id">Booking ID</th>
+            <th>Guest Name</th>
+            <th>Room(s)</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Amount</th>
+            <th class="th-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let booking of paginatedBookings" class="bk-row">
+            <!-- Booking ID -->
+            <td class="td-id">
+              <span class="bk-id-chip">#{{ booking.bookingId }}</span>
+            </td>
+            <!-- Guest Name -->
+            <td>
+              <div class="guest-profile">
+                <div class="guest-avatar">{{ (booking.customerName || 'G').charAt(0).toUpperCase() }}</div>
+                <span class="guest-name">{{ booking.customerName }}</span>
+              </div>
+            </td>
+            <!-- Room(s) -->
+            <td>
+              <div class="room-chip">
+                <i class="bi bi-door-open-fill chip-icon"></i>
+                <span>{{ bookingRoomsMap.get(booking.bookingId) || '…' }}</span>
+              </div>
+            </td>
+            <!-- Check-In -->
+            <td>
+              <div class="date-chip date-in">
+                <i class="bi bi-calendar-check-fill"></i>
+                <span>{{ booking.checkInDate }}</span>
+              </div>
+            </td>
+            <!-- Check-Out -->
+            <td>
+              <div class="date-chip date-out">
+                <i class="bi bi-calendar-x-fill"></i>
+                <span>{{ booking.checkOutDate }}</span>
+              </div>
+            </td>
+            <!-- Amount -->
+            <td>
+              <span class="amount-value">₹{{ booking.totalAmount | number }}</span>
+            </td>
+            <!-- Status -->
+            <td class="td-status">
+              <span class="status-badge" [ngClass]="getStatusBadgeClass(booking.status)">
+                <span class="status-dot"></span>
+                {{ booking.status === 'CheckedIn' ? 'Checked In' : booking.status === 'CheckedOut' ? 'Checked Out' : booking.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bk-pagination" *ngIf="filteredBookings().length > pageSize">
+      <span class="pagination-info">
+        Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>–<strong>{{ currentPage * pageSize > filteredBookings().length ? filteredBookings().length : currentPage * pageSize }}</strong>
+        of <strong>{{ filteredBookings().length }}</strong> bookings
+      </span>
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <span class="page-label">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EMPTY STATE ===== -->
+  <div class="bk-empty" *ngIf="!loading && filteredBookings().length === 0">
+    <div class="bk-empty-icon"><i class="bi bi-journal-x"></i></div>
+    <h4>No Bookings Found</h4>
+    <p>No records match the selected filter or search term. Try a different status or search query.</p>
+  </div>
+
+</div>

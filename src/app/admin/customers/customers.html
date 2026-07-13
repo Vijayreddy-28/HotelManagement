@@ -1,0 +1,230 @@
+<div class="customers-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="cust-header">
+    <div class="cust-header-left">
+      <h1 class="cust-title">Customer Profiles</h1>
+      <p class="cust-subtitle">View registered guests, their contact details, and complete booking histories.</p>
+    </div>
+    <div class="cust-header-right">
+      <div class="cust-count-badge">
+        <i class="bi bi-people-fill"></i>
+        <span>{{ filteredCustomers.length }} Registered Guests</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STATS ROW ===== -->
+  <div class="cust-stats-row">
+    <div class="cust-stat-card">
+      <div class="stat-icon-wrap icon-blue"><i class="bi bi-person-badge-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Guests</span>
+        <span class="stat-value">{{ customers.length }}</span>
+      </div>
+    </div>
+    <div class="cust-stat-card">
+      <div class="stat-icon-wrap icon-green"><i class="bi bi-person-check-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Active Accounts</span>
+        <span class="stat-value">{{ activeCustomers }}</span>
+      </div>
+    </div>
+    <div class="cust-stat-card">
+      <div class="stat-icon-wrap icon-violet"><i class="bi bi-journal-bookmark-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Showing Results</span>
+        <span class="stat-value">{{ filteredCustomers.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="cust-search-card">
+    <div class="cust-search-inner">
+      <i class="bi bi-search cust-search-icon"></i>
+      <input type="text" class="cust-search-input" placeholder="Search by name, email, phone, or Aadhaar..."
+        [(ngModel)]="searchText" (ngModelChange)="filterCustomers()" id="customer-search" />
+      <button class="cust-clear-btn" *ngIf="searchText" (click)="searchText=''; filterCustomers()" type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="cust-skeleton-grid" *ngIf="loading">
+    <div class="cust-skeleton-row" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="sk-avatar-sm"></div>
+      <div class="sk-lines">
+        <div class="sk-line w50"></div>
+        <div class="sk-line w30"></div>
+      </div>
+      <div class="sk-line w40 sk-right"></div>
+      <div class="sk-line w30 sk-right"></div>
+      <div class="sk-line w20 sk-right sk-pill"></div>
+      <div class="sk-btn"></div>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOMERS TABLE CARD ===== -->
+  <div class="cust-table-card" *ngIf="!loading && filteredCustomers.length > 0">
+    <div class="table-responsive">
+      <table class="cust-table">
+        <thead>
+          <tr>
+            <th class="th-guest">Guest Profile</th>
+            <th>Email Address</th>
+            <th>Phone</th>
+            <th>Aadhaar</th>
+            <th>Status</th>
+            <th class="th-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of paginatedCustomers" class="cust-row">
+            <!-- Guest Profile -->
+            <td class="td-guest">
+              <div class="guest-profile">
+                <div class="guest-avatar">{{ (customer.name || 'G').charAt(0).toUpperCase() }}</div>
+                <div class="guest-meta">
+                  <span class="guest-name">{{ customer.name }}</span>
+                  <span class="guest-uid">UID #{{ customer.userId }}</span>
+                </div>
+              </div>
+            </td>
+            <!-- Email -->
+            <td>
+              <div class="cust-info-chip">
+                <i class="bi bi-envelope-fill chip-icon chip-blue"></i>
+                <span>{{ customer.email }}</span>
+              </div>
+            </td>
+            <!-- Phone -->
+            <td>
+              <div class="cust-info-chip">
+                <i class="bi bi-telephone-fill chip-icon chip-teal"></i>
+                <span>{{ customer.phoneNumber || 'N/A' }}</span>
+              </div>
+            </td>
+            <!-- Aadhaar -->
+            <td>
+              <span class="aadhaar-pill">{{ customer.adhaarNumber || '— Not Provided —' }}</span>
+            </td>
+            <!-- Status -->
+            <td>
+              <span class="status-chip" [class.status-active]="customer.isActive" [class.status-inactive]="!customer.isActive">
+                <span class="status-dot"></span>
+                {{ customer.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <!-- Actions -->
+            <td class="td-action">
+              <button class="btn-history" (click)="viewBookingHistory(customer)">
+                <i class="bi bi-clock-history"></i>
+                <span>History</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="cust-pagination" *ngIf="filteredCustomers.length > pageSize">
+      <span class="pagination-info">
+        Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>–<strong>{{ currentPage * pageSize > filteredCustomers.length ? filteredCustomers.length : currentPage * pageSize }}</strong>
+        of <strong>{{ filteredCustomers.length }}</strong> guests
+      </span>
+      <div class="pagination-controls">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <span class="page-label">{{ currentPage }} / {{ totalPages }}</span>
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EMPTY STATE ===== -->
+  <div class="cust-empty" *ngIf="!loading && filteredCustomers.length === 0">
+    <div class="cust-empty-icon"><i class="bi bi-person-x"></i></div>
+    <h4>No Customers Found</h4>
+    <p>No guests match your current search. Try a different name, email, or phone number.</p>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     BOOKING HISTORY MODAL
+     ============================================================ -->
+<div class="hist-modal-overlay" *ngIf="showHistoryModal" (click)="closeHistoryModal()">
+  <div class="hist-modal-card" (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="hist-modal-header">
+      <div class="hist-modal-title-row">
+        <div class="hist-modal-icon"><i class="bi bi-clock-history"></i></div>
+        <div>
+          <h2 class="hist-modal-title">Booking History</h2>
+          <p class="hist-modal-subtitle">{{ selectedCustomer?.name }} &bull; {{ selectedCustomer?.email }}</p>
+        </div>
+      </div>
+      <button class="hist-close-btn" (click)="closeHistoryModal()" type="button" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="hist-modal-body">
+
+      <!-- Loading -->
+      <div class="hist-loading" *ngIf="loadingHistory">
+        <div class="hist-sk" *ngFor="let i of [1,2,3]"></div>
+      </div>
+
+      <!-- Bookings List -->
+      <div class="hist-list" *ngIf="!loadingHistory && bookingHistory.length > 0">
+        <div class="hist-item" *ngFor="let bk of bookingHistory">
+          <div class="hist-item-left">
+            <div class="hist-booking-id">#{{ bk.bookingId }}</div>
+          </div>
+          <div class="hist-item-body">
+            <div class="hist-item-top">
+              <span class="hist-booking-label">Booking #{{ bk.bookingId }}</span>
+              <span class="hist-status-badge" [ngClass]="getStatusClass(bk.status)">{{ bk.status }}</span>
+            </div>
+            <div class="hist-item-meta">
+              <span class="hist-meta-item">
+                <i class="bi bi-calendar-check text-success"></i> In: {{ bk.checkInDate }}
+              </span>
+              <span class="hist-meta-item">
+                <i class="bi bi-calendar-x text-danger"></i> Out: {{ bk.checkOutDate }}
+              </span>
+              <span class="hist-meta-item hist-amount">
+                <i class="bi bi-currency-rupee"></i> ₹{{ bk.totalAmount | number }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty History -->
+      <div class="hist-empty" *ngIf="!loadingHistory && bookingHistory.length === 0">
+        <div class="hist-empty-icon"><i class="bi bi-journal-x"></i></div>
+        <h5>No Booking History</h5>
+        <p>This guest hasn't made any bookings yet.</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="hist-modal-footer">
+      <span class="hist-footer-count" *ngIf="bookingHistory.length > 0">
+        {{ bookingHistory.length }} booking{{ bookingHistory.length !== 1 ? 's' : '' }} found
+      </span>
+      <button class="btn-hist-close" (click)="closeHistoryModal()">Close</button>
+    </div>
+
+  </div>
+</div>

@@ -1,214 +1,162 @@
-<div class="container-fluid p-0">
+<div class="register-workspace">
   <div class="row g-0 min-vh-100">
 
-    <!-- Left Side -->
-    <div class="col-lg-6 d-none d-lg-block image-side">
-
-      <div class="overlay">
-
-        <div class="brand">
-          <h2>🏨 HotelStay</h2>
+    <!-- Left Side: Editorial Banner Panel -->
+    <div class="col-lg-6 d-none d-lg-block banner-side">
+      <div class="banner-overlay">
+        
+        <div class="banner-brand" routerLink="/" style="cursor: pointer;">
+          <div class="brand-logo">
+            <i class="bi bi-buildings-fill"></i>
+          </div>
+          <div class="brand-info">
+            <h2 class="brand-name">The Canopy Retreat</h2>
+            <span class="brand-subtitle">Exquisite Hospitality</span>
+          </div>
         </div>
 
-        <div class="content">
-          <h1>Create Your Guest Account</h1>
-
-          <p>
-            Register once and enjoy quick bookings, exclusive offers,
-            secure payments, and premium hospitality.
+        <div class="banner-body">
+          <h1 class="headline-hero">Create Your<br>Guest Account</h1>
+          <p class="headline-lead">
+            Register your guest profile once to enjoy expedited booking checkouts, manage room dining carts, log feedback, and secure elite loyalty offers.
           </p>
 
-          <div class="features">
-            <div>
-              <i class="bi bi-check-circle-fill me-2"></i>
-              Secure Registration
+          <div class="brand-features-list">
+            <div class="feature-item">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>One-Click Suites Reservations</span>
             </div>
-
-            <div>
-              <i class="bi bi-stars me-2"></i>
-              Best Hotel Deals
+            <div class="feature-item">
+              <i class="bi bi-shield-lock-fill"></i>
+              <span>Highly Secure Profile Verification</span>
             </div>
-
-            <div>
-              <i class="bi bi-shield-lock-fill me-2"></i>
-              Safe & Trusted
+            <div class="feature-item">
+              <i class="bi bi-gift-fill"></i>
+              <span>Welcome Privilege Rewards</span>
             </div>
           </div>
+        </div>
 
+        <div class="banner-footer">
+          <p>&copy; 2026 The Canopy Retreat. All rights reserved.</p>
         </div>
 
       </div>
-
     </div>
 
-    <!-- Right Side -->
+    <!-- Right Side: Register Form Panel -->
+    <div class="col-lg-6 d-flex align-items-center justify-content-center form-side">
+      
+      <div class="form-container-card">
 
-    <div class="col-lg-6 d-flex align-items-center justify-content-center">
-
-      <div class="card register-card shadow-lg border-0">
-
-        <div class="card-body p-4">
-
-          <div class="text-end mb-3">
-            Already have an account?
-            <a routerLink="/login">Login</a>
+        <div class="form-card-header">
+          <div class="nav-redirect">
+            <span>Have an account?</span>
+            <a routerLink="/login" class="link-action">Sign In</a>
           </div>
-
-          <div class="text-center mb-4">
-            <h2 class="fw-bold text-primary">
-              Guest Registration
-            </h2>
-
-            <p class="text-muted">
-              Create your account to continue
-            </p>
-          </div>
-
-          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-
-            <div class="row">
-
-              <!-- User Name -->
-
-              <div class="col-md-6 mb-3">
-
-                <label class="form-label fw-semibold">
-                  Full Name
-                </label>
-
-                <input type="text" class="form-control" formControlName="userName" placeholder="Enter full name">
-
-                <div class="text-danger mt-1"
-                  *ngIf="registerForm.get('userName')?.touched && registerForm.get('userName')?.invalid">
-
-                  <small *ngIf="registerForm.get('userName')?.errors?.['required']">
-                    Full Name is required
-                  </small>
-
-                  <small *ngIf="registerForm.get('userName')?.errors?.['minlength']">
-                    Full Name must contain at least 3 characters
-                  </small>
-
-                </div>
-
-              </div>
-
-              <!-- Email -->
-
-              <div class="col-md-6 mb-3">
-
-                <label class="form-label fw-semibold">
-                  Email Address
-                </label>
-
-                <input type="email" class="form-control" formControlName="email" placeholder="Enter email address">
-
-                <div class="text-danger mt-1"
-                  *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
-
-                  <small *ngIf="registerForm.get('email')?.errors?.['required']">
-                    Email is required
-                  </small>
-
-                  <small *ngIf="registerForm.get('email')?.errors?.['email']">
-                    Enter a valid email address
-                  </small>
-
-                </div>
-
-              </div>
-
-              <!-- Phone -->
-
-              <div class="col-md-6 mb-3">
-
-                <label class="form-label fw-semibold">
-                  Phone Number
-                </label>
-
-                <input type="tel" class="form-control" formControlName="phone" placeholder="Enter phone number">
-
-                <div class="text-danger mt-1"
-                  *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
-
-                  <small *ngIf="registerForm.get('phone')?.errors?.['required']">
-                    Phone Number is required
-                  </small>
-
-                  <small *ngIf="registerForm.get('phone')?.errors?.['pattern']">
-                    Enter a valid 10-digit phone number
-                  </small>
-
-                </div>
-
-              </div>
-
-              <!-- Password -->
-
-              <div class="col-md-6 mb-3">
-
-                <label class="form-label fw-semibold">
-                  Password
-                </label>
-
-                <input type="password" class="form-control" formControlName="password" placeholder="Enter password">
-
-                <div class="text-danger mt-1"
-                  *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
-
-                  <small *ngIf="registerForm.get('password')?.errors?.['required']">
-                    Password is required
-                  </small>
-
-                  <small *ngIf="registerForm.get('password')?.errors?.['minlength']">
-                    Password must be at least 6 characters
-                  </small>
-
-                </div>
-
-              </div>
-
-              <!-- Aadhaar -->
-
-              <div class="col-12 mb-3">
-
-                <label class="form-label fw-semibold">
-                  Aadhaar Number
-                </label>
-
-                <input type="text" maxlength="12" class="form-control" formControlName="aadhaarNumber"
-                  placeholder="Enter 12-digit Aadhaar number">
-
-                <div class="text-danger mt-1"
-                  *ngIf="registerForm.get('aadhaarNumber')?.touched && registerForm.get('aadhaarNumber')?.invalid">
-
-                  <small *ngIf="registerForm.get('aadhaarNumber')?.errors?.['required']">
-                    Aadhaar Number is required
-                  </small>
-
-                  <small *ngIf="registerForm.get('aadhaarNumber')?.errors?.['pattern']">
-                    Aadhaar Number must contain exactly 12 digits
-                  </small>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            <div class="d-grid mt-3">
-
-              <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid">
-
-                Create Account
-
-              </button>
-
-            </div>
-
-          </form>
-
+          
+          <h2 class="form-title">Guest Registration</h2>
+          <p class="form-subtitle">Create your personal guest account to start exploring suites</p>
         </div>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="form-inputs-group">
+
+          <div class="row g-3">
+            
+            <!-- Full Name -->
+            <div class="col-md-6">
+              <div class="input-field-block">
+                <label class="field-label" for="userName">Full Name</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="userName" class="form-control-custom" placeholder="e.g. John Doe"
+                    formControlName="userName" />
+                  <i class="bi bi-person-fill input-icon"></i>
+                </div>
+                <div class="validation-message" *ngIf="registerForm.get('userName')?.touched && registerForm.get('userName')?.invalid">
+                  <i class="bi bi-exclamation-circle-fill"></i> Name must be at least 5 chars.
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <div class="input-field-block">
+                <label class="field-label" for="email">Email Address</label>
+                <div class="input-icon-wrapper">
+                  <input type="email" id="email" class="form-control-custom" placeholder="name@gmail.com"
+                    formControlName="email" />
+                  <i class="bi bi-envelope-fill input-icon"></i>
+                </div>
+                <div class="validation-message" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid">
+                  <i class="bi bi-exclamation-circle-fill"></i> Email must be at least 10 chars.
+                </div>
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="col-md-6">
+              <div class="input-field-block">
+                <label class="field-label" for="password">Password</label>
+                <div class="input-icon-wrapper">
+                  <input type="password" id="password" class="form-control-custom" placeholder="Min. 8 characters"
+                    formControlName="password" />
+                  <i class="bi bi-shield-lock-fill input-icon"></i>
+                </div>
+                <div class="validation-message" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid">
+                  <i class="bi bi-exclamation-circle-fill"></i> Min. 8 characters required.
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-md-6">
+              <div class="input-field-block">
+                <label class="field-label" for="phone">Phone Number</label>
+                <div class="input-icon-wrapper">
+                  <input type="tel" id="phone" class="form-control-custom" placeholder="e.g. 9876543210"
+                    formControlName="phone" />
+                  <i class="bi bi-telephone-fill input-icon"></i>
+                </div>
+                <div class="validation-message" *ngIf="registerForm.get('phone')?.touched && registerForm.get('phone')?.invalid">
+                  <i class="bi bi-exclamation-circle-fill"></i> Enter a valid 10-digit number.
+                </div>
+              </div>
+            </div>
+
+            <!-- Aadhaar Reference ID -->
+            <div class="col-12">
+              <div class="input-field-block">
+                <label class="field-label" for="aadhaarNumber">Aadhaar Reference Number</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="aadhaarNumber" class="form-control-custom" placeholder="12-digit Aadhaar ID"
+                    formControlName="aadhaarNumber" />
+                  <i class="bi bi-card-text input-icon"></i>
+                </div>
+                <div class="validation-message" *ngIf="registerForm.get('aadhaarNumber')?.touched && registerForm.get('aadhaarNumber')?.invalid">
+                  <i class="bi bi-exclamation-circle-fill"></i> Enter a valid 12-digit ID number.
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Submit trigger -->
+          <div class="form-action-footer">
+            <button type="submit" class="btn-submit-register" [disabled]="registerForm.invalid || submitting">
+              <span *ngIf="!submitting"><i class="bi bi-person-plus-fill me-1.5"></i>Create Account</span>
+              <span *ngIf="submitting"><span class="spinner-border spinner-border-sm me-1.5" role="status"></span>Registering Profile...</span>
+            </button>
+          </div>
+
+          <!-- Go Back link -->
+          <div class="back-home-link-row">
+            <a routerLink="/" class="btn-back-home">
+              <i class="bi bi-arrow-left"></i>
+              <span>Back to Home</span>
+            </a>
+          </div>
+
+        </form>
 
       </div>
 

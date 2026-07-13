@@ -2,100 +2,120 @@
   <form [formGroup]="searchForm" (ngSubmit)="searchRooms()" class="enterprise-form">
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label"> <i class="bi bi-calendar-check"></i> Check-In Date
+        <label class="form-label">
+          <i class="bi bi-calendar-check-fill"></i> Check-In Date
         </label>
         <input type="date" class="form-control-custom" (change)="setMinCheckoutDate()" [min]="todayDate"
           formControlName="checkIn" />
       </div>
 
       <div class="form-group">
-        <label class="form-label"> <i class="bi bi-calendar-x"></i> Check-Out Date </label>
+        <label class="form-label">
+          <i class="bi bi-calendar-x-fill"></i> Check-Out Date
+        </label>
         <input type="date" [min]="minCheckoutDate" class="form-control-custom" formControlName="checkOut" />
       </div>
 
       <div class="form-group action-group">
-        <button type="submit" class="btn-enterprise-primary" style="background-color: #0f4c81;">
-          <i class="bi bi-search"></i>
-          <span>Check Availability</span>
+        <button type="submit" class="btn-enterprise-primary" [disabled]="searchForm.invalid || searching()">
+          <span *ngIf="!searching()"><i class="bi bi-search me-1.5"></i>Check Availability</span>
+          <span *ngIf="searching()"><span class="spinner-border spinner-border-sm me-1.5"
+              role="status"></span>Checking...</span>
         </button>
       </div>
     </div>
   </form>
 </div>
 
-<div *ngIf="rooms().length === 0" class="d-flex justify-content-center align-items-center py-5">
-  <div class="empty-room-card text-center">
-    <i class="bi bi-house-door display-1 mb-3" style="color: rgb(197, 59, 59);"></i>
+<!-- Loading state -->
+<div *ngIf="searching()" class="text-center py-5 bg-white rounded-4 border shadow-sm my-4">
+  <div class="spinner-border text-primary" role="status"></div>
+  <p class="text-muted small mt-3 mb-0">Searching available canopy retreats...</p>
+</div>
 
-    <h3 class="fw-bold mb-2">No Rooms Available</h3>
-
-    <p class="text-muted mb-4">
+<!-- Empty state -->
+<div *ngIf="!searching() && rooms().length === 0" class="empty-state-wrapper">
+  <div class="empty-room-card">
+    <div class="empty-icon-circle">
+      <i class="bi bi-house-door"></i>
+    </div>
+    <h3 class="empty-title">No Rooms Available</h3>
+    <p class="empty-text">
       Sorry, there are no rooms available for the selected dates.
       Please choose different dates or try again later.
     </p>
   </div>
 </div>
-<div class="rooms-grid" *ngIf="rooms().length > 0">
-  <div class="room-premium-card" *ngFor="let room of rooms()">
-    <div class="card-media-banner">
-      <span class="room-badge-indicator" [class.available]="room.status === 'Available'">
-        {{ room.status }}
-      </span>
-      <div class="price-overlay">
-        <span class="currency">₹</span>
-        <span class="amount">{{ room.pricePerNight }}</span>
-        <span class="period">/ night</span>
-      </div>
-    </div>
 
-    <div class="room-card-body">
-      <div class="room-title-row">
-        <h3 class="room-identifier">Room {{ room.roomNumber }}</h3>
-        <span class="room-type-pill">{{ room.typeName }}</span>
+<!-- Rooms Listing -->
+<div class="rooms-list" *ngIf="!searching() && rooms().length > 0">
+
+  <div class="room-horizontal-card" *ngFor="let room of rooms()">
+
+    <!-- Center Section: Details & Features -->
+    <div class="card-details-wrapper">
+      <div class="details-header">
+        <h3 class="room-title">Room {{ room.roomNumber }}</h3>
+        <span class="room-type-tag">{{ room.typeName }} Room</span>
       </div>
 
-      <hr class="divider-subtle" />
-
-      <div class="room-spec-matrix">
-        <div class="spec-item">
+      <!-- Specs row -->
+      <div class="details-specs">
+        <div class="spec-pill" title="Floor Number">
           <i class="bi bi-layers"></i>
-          <div class="spec-text">
-            <span class="spec-label">Floor</span>
-            <span class="spec-value">{{ room.floor }}</span>
-          </div>
+          <span>Floor {{ room.floor }}</span>
         </div>
-
-        <div class="spec-item">
-          <i class="bi bi-single-bed"></i>
-          <div class="spec-text">
-            <span class="spec-label">Beds</span>
-            <span class="spec-value">{{ room.noOfBeds }}</span>
-          </div>
+        <div class="spec-pill" title="Number of Beds">
+          <i class="bi bi-door-open"></i>
+          <span>{{ room.noOfBeds }} Beds</span>
         </div>
-
-        <div class="spec-item">
+        <div class="spec-pill" title="Max Occupancy">
           <i class="bi bi-people"></i>
-          <div class="spec-text">
-            <span class="spec-label">Max Guest</span>
-            <span class="spec-value">{{ room.maxOccupancy }}</span>
-          </div>
+          <span>{{ room.maxOccupancy }} Guests</span>
         </div>
       </div>
 
-      <div class="card-action-footer">
-        <button class="btn-enterprise-success" (click)="addToCart(room)" type="button">
-          <i class="bi bi-cart-plus"></i>
-          <span>Add to Booking</span>
-        </button>
+      <!-- Features Checklist (Premium feel) -->
+      <div class="details-features">
+        <span class="feature-tag"><i class="bi bi-wifi"></i> Free Wi-Fi</span>
+        <span class="feature-tag"><i class="bi bi-snow"></i> A/C</span>
+        <span class="feature-tag"><i class="bi bi-tv"></i> Smart TV</span>
+        <span class="feature-tag"><i class="bi bi-cup-hot"></i> Coffee Maker</span>
       </div>
     </div>
+
+    <!-- Right Section: Price & Actions -->
+    <div class="card-actions-wrapper">
+      <div class="actions-status-row">
+        <span class="status-indicator" [class.available]="room.status === 'Available'">
+          <span class="indicator-dot"></span>
+          {{ room.status }}
+        </span>
+      </div>
+
+      <div class="actions-price-block">
+        <div class="price-value">
+          <span class="currency">₹</span>
+          <span class="amount">{{ room.pricePerNight }}</span>
+        </div>
+        <span class="price-period">per night</span>
+      </div>
+
+      <div class="actions-control-block">
+        <div class="room-selector-control">
+          <button type="button" class="btn-ctrl minus-btn" [disabled]="!isRoomInCart(room.roomId)"
+            (click)="removeFromCart(room)" title="Remove from booking">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+
+          <button type="button" class="btn-ctrl plus-btn" [disabled]="isRoomInCart(room.roomId)"
+            (click)="addToCart(room)" title="Add to booking">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
-</div>
-<!-- Floating Cart -->
-<div class="floating-cart" *ngIf="cartService.cartRooms().length > 0">
-  <button class="cart-btn" routerLink="/customer/cart">
-    <i class="bi bi-cart-fill"></i>
-    <span>View Rooms</span>
-    <span class="cart-count">{{ cartService.cartRooms().length }}</span>
-  </button>
+
 </div>

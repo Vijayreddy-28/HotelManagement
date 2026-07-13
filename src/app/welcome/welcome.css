@@ -1,88 +1,198 @@
-/* Full Page */
+/* ==========================================================================
+   WELCOME PAGE STYLESHEET (LUXURY SCHEMA)
+   ========================================================================== */
+
+/* Full Screen Layout Container */
 .welcome-container {
+  position: relative;
   height: 100vh;
-  background: #ffffff;
+  width: 100vw;
+  background-color: #0b0f19; /* Deep luxury dark background */
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Content */
-.content {
+/* Ambient Backdrops Glow Shapes */
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.bg-shape-1 {
+  width: 320px;
+  height: 320px;
+  background: rgba(37, 99, 235, 0.12);
+  top: 15%;
+  left: 10%;
+  filter: blur(80px);
+}
+
+.bg-shape-2 {
+  width: 440px;
+  height: 440px;
+  background: rgba(15, 76, 129, 0.18);
+  bottom: 10%;
+  right: 5%;
+  filter: blur(100px);
+}
+
+/* Page content elements alignment */
+.welcome-content {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 580px;
   text-align: center;
-  animation: fadeIn 0.8s ease;
-  max-width: 800px;
-  padding: 20px;
+  animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Title */
-.title {
-  font-size: 4rem;
-  font-weight: 800;
-  color: #0f4c81;
-  margin-bottom: 15px;
-  letter-spacing: -1px;
+/* Brand logo and textual details */
+.welcome-brand {
+  margin-bottom: 28px;
 }
 
-/* Subtitle */
-.subtitle {
-  font-size: 1.25rem;
-  color: #6b7280;
-  margin-bottom: 50px;
-  font-weight: bold;
-}
-
-/* Buttons */
-.button-group {
+.brand-logo-large {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #ffffff, #e2e8f0);
+  border-radius: 20px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 20px;
+  font-size: 2.2rem;
+  color: #0f4c81;
+  margin: 0 auto 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.brand-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin: 0 0 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.brand-tagline {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Info card widget */
+.welcome-card {
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.card-message {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+/* Quick Actions buttons */
+.action-buttons-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
-.btn-custom {
-  min-width: 220px;
-  padding: 14px 28px;
+.btn-portal {
+  width: 100%;
+  max-width: 260px;
+  padding: 14px 24px;
   border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   border: none;
-  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Employee Button */
-.employee-btn {
-  background: #0f4c81;
-  color: white;
+.btn-guest {
+  background: linear-gradient(135deg, #d4af37, #b45309);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.2);
 }
 
-.employee-btn:hover {
-  background: #0b3b63;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(15, 76, 129, 0.25);
+.btn-guest:hover {
+  background: linear-gradient(135deg, #c5a02e, #a14907);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(180, 83, 9, 0.35);
 }
 
-/* Guest Button */
-.guest-btn {
-  background: #d4af37;
-  color: white;
+.btn-employee {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
-.guest-btn:hover {
-  background: #c19b26;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+.btn-employee:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-/* Animation */
-@keyframes fadeIn {
+/* Footer details */
+.welcome-footer {
+  margin-top: 32px;
+}
+
+.welcome-footer p {
+  font-size: 0.72rem;
+  color: #475569;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+/* Entry Animation keyframes */
+@keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(25px);
+    transform: translateY(24px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Responsive configurations */
+@media (max-width: 480px) {
+  .brand-title {
+    font-size: 2rem;
+  }
+  
+  .welcome-card {
+    padding: 24px 20px;
+  }
+  
+  .action-buttons-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .btn-portal {
+    width: 100%;
   }
 }

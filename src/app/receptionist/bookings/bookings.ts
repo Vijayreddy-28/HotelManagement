@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
+
 import { ToastrService } from 'ngx-toastr';
 
 import { RoomBookingService } from '../../../services/roombooking.service';
@@ -25,9 +25,18 @@ export class ReceptionistBookingsComponent implements OnInit {
   todayCheckOuts = signal<CheckoutBookings[]>([]);
   currentGuests = signal<CurrentGuests[]>([]);
   customersList = signal<any[]>([]);
+  loading = signal<boolean>(true);
+
+  totalCheckInsCount = signal<number>(0);
+  totalCheckOutsCount = signal<number>(0);
+  totalGuestsCount = signal<number>(0);
+
+  totalCheckInPages = signal<number>(1);
+  totalCheckOutPages = signal<number>(1);
+  totalPages = signal<number>(1); // for guests
 
   // Room Numbers Map to prevent duplicate loads
-  bookingRoomsMap = new Map<number, string>();
+  bookingRoomsMap = signal<Map<number, string>>(new Map());
 
   // Search filter texts
   searchText = '';
@@ -36,7 +45,9 @@ export class ReceptionistBookingsComponent implements OnInit {
   activeTab = signal<'checkin' | 'checkout' | 'guest'>('checkin');
 
   // Pagination for Guests page
-  guestPage = 1;
+  private _guestPage = signal<number>(1);
+  get guestPage(): number { return this._guestPage(); }
+  set guestPage(val: number) { this._guestPage.set(val); }
   guestPageSize = 5;
 
   // Extend Stay Modal
@@ -56,69 +67,140 @@ export class ReceptionistBookingsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadTodayCheckIns();
-    this.loadTodayCheckOuts();
-    this.loadCurrentGuests();
-    this.loadCustomers();
+    this.loadAllData();
+  }
+
+  goToBilling(): void {
+    this.router.navigate(['/receptionist/billing']);
+  }
+
+  loadAllData() {
+    this.loading.set(true);
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin([
+        this.bookingService.getTodayCheckIns(this.checkInPage, this.checkInPageSize),
+        this.bookingService.getTodayCheckOuts(this.checkOutPage, this.checkOutPageSize),
+        this.bookingService.getCurrentGusests(this.guestPage, this.guestPageSize),
+        this.userService.getCustomers()
+      ]).subscribe({
+        next: ([checkins, checkouts, guests, customers]: [any, any, any, any]) => {
+          const checkinsArray = checkins?.data || [];
+          this.todayCheckIns.set(checkinsArray);
+          this.totalCheckInsCount.set(checkins?.totalRecords || checkinsArray.length);
+          this.totalCheckInPages.set(checkins?.totalPages || 1);
+          this.loadRoomNumbersForBookings(checkinsArray);
+
+          const checkoutsArray = checkouts?.data || [];
+          this.todayCheckOuts.set(checkoutsArray);
+          this.totalCheckOutsCount.set(checkouts?.totalRecords || checkoutsArray.length);
+          this.totalCheckOutPages.set(checkouts?.totalPages || 1);
+          this.loadRoomNumbersForBookings(checkoutsArray);
+
+          const guestsArray = guests?.data || [];
+          this.currentGuests.set(guestsArray);
+          this.totalGuestsCount.set(guests?.totalRecords || guestsArray.length);
+          this.totalPages.set(guests?.totalPages || 1);
+          this.loadRoomNumbersForBookings(guestsArray);
+
+          const customersArray = Array.isArray(customers) ? customers : (customers?.data || customers?.customers || []);
+          this.customersList.set(customersArray);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.toastr.error('Failed to load bookings database.', 'API Error');
+        }
+      });
+    });
   }
 
   loadTodayCheckIns() {
-    this.bookingService.getTodayCheckIns().subscribe({
+    this.loading.set(true);
+    this.bookingService.getTodayCheckIns(this.checkInPage, this.checkInPageSize).subscribe({
       next: (res: any) => {
-        this.todayCheckIns.set(res || []);
-        this.loadRoomNumbersForBookings(res || []);
+        const checkinsArray = res?.data || [];
+        this.todayCheckIns.set(checkinsArray);
+        this.totalCheckInsCount.set(res?.totalRecords || checkinsArray.length);
+        this.totalCheckInPages.set(res?.totalPages || 1);
+        this.loadRoomNumbersForBookings(checkinsArray);
+        this.loading.set(false);
       },
       error: (err) => {
+        this.loading.set(false);
         this.toastr.error(err.error?.message || 'Unable to load today\'s check-ins.', 'API Error');
       }
     });
   }
 
   loadTodayCheckOuts() {
-    this.bookingService.getTodayCheckOuts().subscribe({
+    this.loading.set(true);
+    this.bookingService.getTodayCheckOuts(this.checkOutPage, this.checkOutPageSize).subscribe({
       next: (res: any) => {
-        this.todayCheckOuts.set(res || []);
-        this.loadRoomNumbersForBookings(res || []);
+        const checkoutsArray = res?.data || [];
+        this.todayCheckOuts.set(checkoutsArray);
+        this.totalCheckOutsCount.set(res?.totalRecords || checkoutsArray.length);
+        this.totalCheckOutPages.set(res?.totalPages || 1);
+        this.loadRoomNumbersForBookings(checkoutsArray);
+        this.loading.set(false);
       },
       error: (err) => {
+        this.loading.set(false);
         this.toastr.error(err.error?.message || 'Unable to load today\'s check-outs.', 'API Error');
       }
     });
   }
 
   loadCurrentGuests() {
-    this.bookingService.getCurrentGusests().subscribe({
+    this.loading.set(true);
+    this.bookingService.getCurrentGusests(this.guestPage, this.guestPageSize).subscribe({
       next: (res: any) => {
-        this.currentGuests.set(res || []);
-        this.loadRoomNumbersForBookings(res || []);
+        const guestsArray = res?.data || [];
+        this.currentGuests.set(guestsArray);
+        this.totalGuestsCount.set(res?.totalRecords || guestsArray.length);
+        this.totalPages.set(res?.totalPages || 1);
+        this.loadRoomNumbersForBookings(guestsArray);
+        this.loading.set(false);
       },
       error: (err) => {
+        this.loading.set(false);
         this.toastr.error(err.error?.message || 'Unable to load current guests.', 'API Error');
       }
     });
   }
 
   loadCustomers() {
+    this.loading.set(true);
     this.userService.getCustomers().subscribe({
       next: (res: any) => {
-        this.customersList.set(res || []);
+        const customersArray = Array.isArray(res) ? res : (res?.data || res?.customers || []);
+        this.customersList.set(customersArray);
+        this.loading.set(false);
       },
       error: (err) => {
+        this.loading.set(false);
         console.error('Failed to load customer profiles:', err);
       }
     });
   }
 
   loadRoomNumbersForBookings(bookings: any[]) {
-    bookings.forEach(b => {
-      if (!this.bookingRoomsMap.has(b.bookingId)) {
+    const list = Array.isArray(bookings) ? bookings : [];
+    list.forEach(b => {
+      if (b && b.bookingId && !this.bookingRoomsMap().has(b.bookingId)) {
         this.bookingService.getBookingRooms(b.bookingId).subscribe({
           next: (rooms: any) => {
-            const roomNums = rooms.map((r: any) => r.roomNumber).join(', ');
-            this.bookingRoomsMap.set(b.bookingId, roomNums || 'Assigned');
+            const roomsArray = Array.isArray(rooms) ? rooms : (rooms?.data || rooms || []);
+            const roomNums = roomsArray.map((r: any) => r.roomNumber).join(', ');
+            this.bookingRoomsMap.update(map => {
+              map.set(b.bookingId, roomNums || 'Assigned');
+              return new Map(map);
+            });
           },
           error: () => {
-            this.bookingRoomsMap.set(b.bookingId, 'Assigned');
+            this.bookingRoomsMap.update(map => {
+              map.set(b.bookingId, 'Assigned');
+              return new Map(map);
+            });
           }
         });
       }
@@ -161,7 +243,7 @@ export class ReceptionistBookingsComponent implements OnInit {
         email: matched?.email || 'guest@retreat.com',
         phone: matched?.phoneNumber || '9876543210',
         adhaarNumber: aadhaar,
-        roomNumber: this.bookingRoomsMap.get(guest.bookingId) || 'Loading...',
+        roomNumber: this.bookingRoomsMap().get(guest.bookingId) || 'Loading...',
         checkInDate: guest.checkInDate,
         checkOutDate: guest.checkOutDate,
         status: guest.status,
@@ -180,38 +262,86 @@ export class ReceptionistBookingsComponent implements OnInit {
     );
   });
 
-  // Paginated Guests
-  paginatedGuests = computed(() => {
-    const list = this.enrichedGuests();
-    const startIndex = (this.guestPage - 1) * this.guestPageSize;
-    return list.slice(startIndex, startIndex + this.guestPageSize);
+  // Pagination parameters
+  private _checkInPage = signal<number>(1);
+  get checkInPage(): number { return this._checkInPage(); }
+  set checkInPage(val: number) { this._checkInPage.set(val); }
+  checkInPageSize = 5;
+
+  private _checkOutPage = signal<number>(1);
+  get checkOutPage(): number { return this._checkOutPage(); }
+  set checkOutPage(val: number) { this._checkOutPage.set(val); }
+  checkOutPageSize = 5;
+
+  // Paginated Check-Ins
+  paginatedCheckIns = computed(() => {
+    return this.filteredCheckIns();
   });
 
-  totalPages = computed(() => {
-    return Math.ceil(this.enrichedGuests().length / this.guestPageSize) || 1;
+  // Paginated Check-Outs
+  paginatedCheckOuts = computed(() => {
+    return this.filteredCheckOuts();
+  });
+
+  // Paginated Guests
+  paginatedGuests = computed(() => {
+    return this.enrichedGuests();
   });
 
   prevPage() {
     if (this.guestPage > 1) {
       this.guestPage--;
+      this.loadCurrentGuests();
     }
   }
 
   nextPage() {
     if (this.guestPage < this.totalPages()) {
       this.guestPage++;
+      this.loadCurrentGuests();
+    }
+  }
+
+  prevCheckInPage() {
+    if (this.checkInPage > 1) {
+      this.checkInPage--;
+      this.loadTodayCheckIns();
+    }
+  }
+
+  nextCheckInPage() {
+    if (this.checkInPage < this.totalCheckInPages()) {
+      this.checkInPage++;
+      this.loadTodayCheckIns();
+    }
+  }
+
+  prevCheckOutPage() {
+    if (this.checkOutPage > 1) {
+      this.checkOutPage--;
+      this.loadTodayCheckOuts();
+    }
+  }
+
+  nextCheckOutPage() {
+    if (this.checkOutPage < this.totalCheckOutPages()) {
+      this.checkOutPage++;
+      this.loadTodayCheckOuts();
     }
   }
 
   setTab(tab: 'checkin' | 'checkout' | 'guest') {
     this.activeTab.set(tab);
+    this.checkInPage = 1;
+    this.checkOutPage = 1;
+    this.guestPage = 1;
   }
 
   // Action: View Details Modal
   viewDetails(booking: any) {
     this.selectedBooking = {
       ...booking,
-      roomNumber: this.bookingRoomsMap.get(booking.bookingId) || 'Retrieving...'
+      roomNumber: this.bookingRoomsMap().get(booking.bookingId) || 'Retrieving...'
     };
 
     // Attempt to enrich with customer info if not present
@@ -230,86 +360,74 @@ export class ReceptionistBookingsComponent implements OnInit {
     this.selectedBooking = null;
   }
 
-  // Action: Check In
-  checkIn(bookingId: number) {
-    Swal.fire({
-      title: 'Confirm Check-In',
-      text: 'Do you want to complete check-in for this guest?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Check In',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#0f4c81',
-      cancelButtonColor: '#64748b'
-    }).then(result => {
-      if (!result.isConfirmed) return;
+  // Custom Confirmation Modal Fields
+  showConfirmModal = signal<boolean>(false);
+  confirmTitle = signal<string>('');
+  confirmMessage = signal<string>('');
+  confirmAction = signal<'checkin' | 'checkout' | 'cancel' | ''>('');
+  confirmTargetId = signal<number | null>(null);
+  processingAction = signal<boolean>(false);
 
-      this.bookingService.checkIn(bookingId).subscribe({
+  closeConfirmModal() {
+    this.showConfirmModal.set(false);
+    this.confirmTargetId.set(null);
+    this.confirmAction.set('');
+    this.processingAction.set(false);
+  }
+
+  executeConfirmedAction() {
+    const action = this.confirmAction();
+    const id = this.confirmTargetId();
+
+    if (!id) return;
+
+    this.processingAction.set(true);
+
+    if (action === 'checkin') {
+      this.bookingService.checkIn(id).subscribe({
         next: (response: any) => {
+          this.processingAction.set(false);
+          this.closeConfirmModal();
           if (response.statusCode === 200 || !response.statusCode) {
-            Swal.fire('Success', 'Guest checked in successfully.', 'success');
+            this.toastr.success('Guest checked in successfully.', 'Success');
             this.loadTodayCheckIns();
             this.loadCurrentGuests();
           } else {
-            Swal.fire('Failed', response.message || 'Unable to check in guest.', 'error');
+            this.toastr.error(response.message || 'Unable to check in guest.', 'Failed');
           }
         },
         error: (err) => {
-          Swal.fire('Error', err.error?.message || 'Failed to complete check-in.', 'error');
+          this.processingAction.set(false);
+          this.closeConfirmModal();
+          this.toastr.error(err.error?.message || 'Failed to complete check-in.', 'Error');
         }
       });
-    });
-  }
-
-  // Action: Check Out
-  checkOut(bookingId: number) {
-    Swal.fire({
-      title: 'Confirm Check-Out',
-      text: 'Do you want to complete check-out for this guest?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Check Out',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#64748b'
-    }).then(result => {
-      if (!result.isConfirmed) return;
-
-      this.bookingService.checkOut(bookingId).subscribe({
+    } else if (action === 'checkout') {
+      this.bookingService.checkOut(id).subscribe({
         next: (response: any) => {
+          this.processingAction.set(false);
+          this.closeConfirmModal();
           if (response.statusCode === 200 || !response.statusCode) {
-            Swal.fire('Success', 'Guest checked out successfully.', 'success');
+            this.toastr.success('Guest checked out successfully.', 'Success');
             this.loadTodayCheckOuts();
             this.loadCurrentGuests();
           } else {
-            Swal.fire('Failed', response.message || 'Unable to check out guest.', 'error');
+            this.toastr.error(response.message || 'Unable to check out guest.', 'Failed');
           }
         },
         error: (err) => {
-          Swal.fire('Error', err.error?.message || 'Failed to complete check-out.', 'error');
+          this.processingAction.set(false);
+          this.closeConfirmModal();
+          this.toastr.error(err.error?.message || 'Failed to complete check-out.', 'Error');
         }
       });
-    });
-  }
-
-  // Action: Cancel Booking
-  cancelBooking(bookingId: number) {
-    Swal.fire({
-      title: 'Cancel Booking',
-      text: 'Are you sure you want to cancel this booking?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Cancel',
-      cancelButtonText: 'No, Keep',
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#64748b'
-    }).then(result => {
-      if (!result.isConfirmed) return;
-
-      this.bookingService.cancelBooking(bookingId).subscribe({
+    } else if (action === 'cancel') {
+      this.bookingService.cancelBooking(id).subscribe({
         next: (response: any) => {
+          this.processingAction.set(false);
+          this.closeConfirmModal();
           if (response.statusCode === 200 || !response.statusCode) {
-            Swal.fire('Success', 'Booking has been cancelled.', 'success');
+            this.toastr.success('Booking has been cancelled.', 'Success');
             this.loadTodayCheckIns();
             this.loadCurrentGuests();
           } else {
@@ -317,10 +435,39 @@ export class ReceptionistBookingsComponent implements OnInit {
           }
         },
         error: (err) => {
+          this.processingAction.set(false);
+          this.closeConfirmModal();
           this.toastr.error(err.error?.message || 'Failed to cancel booking.', 'API Error');
         }
       });
-    });
+    }
+  }
+
+  // Action: Check In
+  checkIn(bookingId: number) {
+    this.confirmTitle.set('Confirm Check-In');
+    this.confirmMessage.set('Do you want to complete the check-in process for this guest?');
+    this.confirmAction.set('checkin');
+    this.confirmTargetId.set(bookingId);
+    this.showConfirmModal.set(true);
+  }
+
+  // Action: Check Out
+  checkOut(bookingId: number) {
+    this.confirmTitle.set('Confirm Check-Out');
+    this.confirmMessage.set('Do you want to complete the check-out process for this guest?');
+    this.confirmAction.set('checkout');
+    this.confirmTargetId.set(bookingId);
+    this.showConfirmModal.set(true);
+  }
+
+  // Action: Cancel Booking
+  cancelBooking(bookingId: number) {
+    this.confirmTitle.set('Cancel Booking');
+    this.confirmMessage.set('Are you sure you want to cancel this room booking? This action is permanent.');
+    this.confirmAction.set('cancel');
+    this.confirmTargetId.set(bookingId);
+    this.showConfirmModal.set(true);
   }
 
   // Action: Extend Stay Modal Open
@@ -337,6 +484,16 @@ export class ReceptionistBookingsComponent implements OnInit {
   extendStay() {
     if (!this.extendBookingId || !this.newCheckOutDate) {
       this.toastr.warning('Please select a valid New Check-out Date.', 'Validation');
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(this.newCheckOutDate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate <= today) {
+      this.toastr.warning('New check-out date must be a date in the future.', 'Validation');
       return;
     }
 

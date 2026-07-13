@@ -3,16 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FoodMenuService } from '../../../services/foodmenu.service';
-import { RoomBookingService } from '../../../services/roombooking.service';
 import { FoodMenu, FoodCategory } from '../../../models/foodmenu.model';
-import Swal from 'sweetalert2';
-import { CurrentRooms } from '../../../models/room.model';
-
-interface RoomSelectionOption {
-  bookingId: number;
-  roomId: number;
-  roomNumber: number;
-}
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-food-menu',
@@ -24,31 +16,22 @@ interface RoomSelectionOption {
 export class FoodMenuComponent implements OnInit {
   // Food items state using actual FoodMenu model
   foodItems = signal<FoodMenu[]>([]);
-  bookingRooms = signal<CurrentRooms[]>([]);
   isLoading = signal<boolean>(false);
   searchQuery = signal<string>('');
   activeCategory = signal<string>('All');
 
   priceSort = signal<string>('default'); // 'default', 'asc', 'desc'
-
-  // Cart Drawer Visibility
-  showCart = signal<boolean>(false);
-  specialInstructions = '';
-
-  // Floating Room Selection Modal
-  showRoomModal = signal<boolean>(false);
-  loadingBookings = signal<boolean>(false);
-  selectedBookingOption = ''; // formatted as "bookingId-roomId-roomNumber"
+  currentPage = signal<number>(1);
+  pageSize = 8;
 
   constructor(
     public foodMenuService: FoodMenuService,
-    private roomBookingService: RoomBookingService,
     private router: Router,
+    private toastr: ToastrService,
   ) { }
 
   ngOnInit() {
     this.loadFoodMenu();
-    this.loadCustomerBookings();
   }
 
   // Load menu items from backend API
@@ -81,30 +64,9 @@ export class FoodMenuComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to fetch food items from API:', err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Failed to Load Menu',
-          text: 'We are currently unable to retrieve the menu. Please try again later.',
-          confirmButtonColor: '#2563eb',
-        });
+        this.toastr.error('We are currently unable to retrieve the menu. Please try again later.', 'Failed to Load Menu');
         this.isLoading.set(false);
       },
-    });
-  }
-
-
-
-  // Load customer bookings to populate room numbers
-  loadCustomerBookings() {
-    this.loadingBookings.set(true);
-    this.roomBookingService.getMyBookings().subscribe({
-      next: (response: any) => {
-        this.bookingRooms.set(response);
-        this.loadingBookings.set(false);
-      },
-      error: (error) => {
-        this.loadingBookings.set(false);
-      }
     });
   }
 
@@ -145,6 +107,16 @@ export class FoodMenuComponent implements OnInit {
     return items;
   });
 
+  paginatedItems = computed(() => {
+    const list = this.filteredItems();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return list.slice(start, start + this.pageSize);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.filteredItems().length / this.pageSize) || 1;
+  });
+
   // Get icons for category pills
   getCatIcon(cat: string): string {
     switch (cat.toLowerCase()) {
@@ -168,17 +140,32 @@ export class FoodMenuComponent implements OnInit {
   // Set category
   setCategory(cat: string) {
     this.activeCategory.set(cat);
+    this.currentPage.set(1);
   }
 
 
   // Set sorting
   setPriceSort(sort: string) {
     this.priceSort.set(sort);
+    this.currentPage.set(1);
   }
 
   // Update search input
   onSearch(query: string) {
     this.searchQuery.set(query);
+    this.currentPage.set(1);
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
   }
 
   // Get banner CSS class based on category
@@ -186,28 +173,27 @@ export class FoodMenuComponent implements OnInit {
     return `cat-${category.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
-  // Grouped cart items that the template expects
-  cartItems = computed(() => {
-    const items = this.foodMenuService.cartItems();
-    const groups = new Map<number, any>();
-    for (const item of items) {
-      if (groups.has(item.itemId)) {
-        groups.get(item.itemId).quantity++;
-      } else {
-        groups.set(item.itemId, {
-          itemId: item.itemId,
-          itemName: item.itemName,
-          category: item.category,
-          price: item.price,
-          imageUrl: item.imageUrl,
-          isVeg: item.isVeg || false,
-          description: item.description || '',
-          quantity: 1,
-        });
+  // Resolve Food Image URL to backend or fallback defaults
+  getFoodImageUrl(item: FoodMenu): string {
+    if (!item.imageUrl) {
+      // Default fallback images based on category
+      switch (item.category.toLowerCase()) {
+        case 'breakfast': return 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=300&q=80';
+        case 'maincourse': return 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80';
+        case 'snacks': return 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=300&q=80';
+        case 'beverage': return 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?auto=format&fit=crop&w=300&q=80';
+        case 'dessert': return 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=300&q=80';
+        default: return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80';
       }
     }
-    return Array.from(groups.values());
-  });
+    // Prepend API base host if it's a relative path
+    if (item.imageUrl.startsWith('uploads') || item.imageUrl.startsWith('images') || item.imageUrl.startsWith('/uploads') || item.imageUrl.startsWith('/images')) {
+      const path = item.imageUrl.startsWith('/') ? item.imageUrl.substring(1) : item.imageUrl;
+      return `http://localhost:5149/${path}`;
+    }
+    return item.imageUrl;
+  }
+
 
   cartCount = computed(() => {
     return this.foodMenuService.cartItems().length;
@@ -229,67 +215,11 @@ export class FoodMenuComponent implements OnInit {
     this.foodMenuService.removeCart(itemId);
   }
 
-  removeItemCompletely(itemId: number) {
-    this.foodMenuService.removeItemCompletely(itemId);
-  }
-
-  getMenuItem(itemId: number): FoodMenu | undefined {
-    return this.foodItems().find((item) => item.itemId === itemId);
-  }
-
-  toggleCart() {
-    this.showCart.update((prev) => !prev);
-  }
-
-  // Floating modal operations
   placeOrder() {
-    // Hide cart side drawer
-    this.showCart.set(false);
-
-    // Check if cart is empty
     if (this.cartCount() === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Empty Cart',
-        text: 'Please add items to your order before placing it.',
-        confirmButtonColor: '#2563eb',
-      });
+      this.toastr.warning('Please add items to your order before placing it.', 'Empty Cart');
       return;
     }
-
-    // Show room number selection modal
-    this.showRoomModal.set(true);
-  }
-
-  closeRoomModal() {
-    this.showRoomModal.set(false);
-  }
-
-  confirmRoomSelection() {
-    const selectedVal = this.selectedBookingOption;
-    if (!selectedVal) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Selection Required',
-        text: 'Please select your room and booking details before proceeding.',
-        confirmButtonColor: '#2563eb',
-      });
-      return;
-    }
-
-    // Value format: "bookingId-roomId-roomNumber"
-    const [bookingIdStr, roomIdStr, roomNumberStr] = selectedVal.split('-');
-    const bookingId = parseInt(bookingIdStr, 10);
-    const roomId = parseInt(roomIdStr, 10);
-    const roomNumber = parseInt(roomNumberStr, 10);
-
-    // Save in service
-    this.foodMenuService.selectedBookingId.set(bookingId);
-    this.foodMenuService.selectedRoomId.set(roomId);
-    this.foodMenuService.selectedRoomNumber.set(roomNumber);
-
-    // Close modal & navigate to Food Cart (FoodOrder component)
-    this.showRoomModal.set(false);
     this.router.navigate(['/customer/foodcart']);
   }
 }

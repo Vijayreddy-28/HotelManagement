@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -10,7 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 import { UserService } from '../../../services/user.service';
 
 import { Employee } from '../../../models/user.model';
-import { HousekeepingTask } from '../../../models/housekeeping.model';
+import { HousekeepingTask, ActiveTasks } from '../../../models/housekeeping.model';
 import { HousekeepingService } from '../../../services/Housekeeping.service';
 
 @Component({
@@ -25,10 +25,66 @@ export class ReceptionistHousekeepingComponent implements OnInit {
   isModalOpen = false;
   employees = signal<Employee[]>([]);
   tasks = signal<HousekeepingTask[]>([]);
+  activeTasks = signal<ActiveTasks[]>([]);
   loadingEmployees = signal<boolean>(true);
   loadingTasks = signal<boolean>(true);
+  loadingActiveTasks = signal<boolean>(true);
   assigningTask = false;
   assignForm: FormGroup;
+
+  // Pagination for Generated Service Tasks
+  private _taskPage = signal<number>(1);
+  get taskPage(): number { return this._taskPage(); }
+  set taskPage(val: number) { this._taskPage.set(val); }
+  taskPageSize = 5;
+
+  paginatedTasks = computed(() => {
+    const list = this.tasks();
+    const start = (this._taskPage() - 1) * this.taskPageSize;
+    return list.slice(start, start + this.taskPageSize);
+  });
+
+  totalTaskPages = computed(() => {
+    return Math.ceil(this.tasks().length / this.taskPageSize) || 1;
+  });
+
+  prevTaskPage(): void {
+    if (this.taskPage > 1) this.taskPage--;
+  }
+
+  nextTaskPage(): void {
+    if (this.taskPage < this.totalTaskPages()) this.taskPage++;
+  }
+
+  // Pagination for Active Task Progress
+  private _activeTaskPage = signal<number>(1);
+  get activeTaskPage(): number { return this._activeTaskPage(); }
+  set activeTaskPage(val: number) { this._activeTaskPage.set(val); }
+  activeTaskPageSize = 5;
+
+  paginatedActiveTasks = computed(() => {
+    const list = this.activeTasks();
+    const start = (this._activeTaskPage() - 1) * this.activeTaskPageSize;
+    return list.slice(start, start + this.activeTaskPageSize);
+  });
+
+  totalActiveTaskPages = computed(() => {
+    return Math.ceil(this.activeTasks().length / this.activeTaskPageSize) || 1;
+  });
+
+  prevActiveTaskPage(): void {
+    if (this.activeTaskPage > 1) this.activeTaskPage--;
+  }
+
+  nextActiveTaskPage(): void {
+    if (this.activeTaskPage < this.totalActiveTaskPages()) this.activeTaskPage++;
+  }
+
+  // ===== Task Progress board (grouped from the same 'tasks' list, no extra API calls) =====
+  createdTasks = computed(() => this.tasks().filter(t => t.status === 'Created'));
+  assignedTasks = computed(() => this.tasks().filter(t => t.status === 'Assigned'));
+  inProgressTasks = computed(() => this.tasks().filter(t => t.status === 'InProgress'));
+  completedTasks = computed(() => this.tasks().filter(t => t.status === 'Completed'));
 
   constructor(
     private fb: FormBuilder,
@@ -45,6 +101,7 @@ export class ReceptionistHousekeepingComponent implements OnInit {
   ngOnInit(): void {
     this.loadEmployees();
     this.loadTasks();
+    this.loadActiveTasks();
   }
 
   loadEmployees(): void {
@@ -77,6 +134,23 @@ export class ReceptionistHousekeepingComponent implements OnInit {
       }
     });
   }
+
+  loadActiveTasks(): void {
+    this.loadingActiveTasks.set(true);
+    this.housekeepingService.activeTasks().subscribe({
+      next: (res: any) => {
+        console.log(res);
+        const tasksArray = Array.isArray(res) ? res : (res?.tasks ?? []);
+        this.activeTasks.set(tasksArray);
+        this.loadingActiveTasks.set(false);
+      },
+      error: (err) => {
+        this.loadingActiveTasks.set(false);
+        this.toastr.error(err.error?.message || 'Unable to load active task progress.', 'API Error');
+      }
+    });
+  }
+
   openAssignmentModal(taskId?: number, employeeId?: number): void {
 
     this.assignForm.patchValue({
@@ -113,6 +187,7 @@ export class ReceptionistHousekeepingComponent implements OnInit {
         );
         this.loadTasks();
         this.loadEmployees();
+        this.loadActiveTasks();
         this.closeAssignmentModal();
       },
       error: (err) => {

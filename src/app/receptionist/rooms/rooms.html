@@ -1,89 +1,146 @@
-<div class="rooms-container container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="page-title text-dark fw-bold mb-1">Room Status & Grid</h2>
-      <p class="page-subtitle text-muted mb-0">Live visual state of the retreat's inventory, occupancy, and cleanings.
-      </p>
+<div class="rooms-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="rooms-header">
+    <div class="rooms-header-left">
+      <h1 class="rooms-title">Retreat Room Grid</h1>
+      <p class="rooms-subtitle">Live occupancy verification, room statuses, and category metrics.</p>
     </div>
   </div>
 
-  <!-- Filters Toolbar -->
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-body p-2 d-flex flex-wrap gap-2">
-      <button class="btn px-4 py-2 fw-semibold btn-filter" [class.active]="activeFilter() === 'All'"
-        (click)="filterRooms('All')">
-        All Rooms
-      </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-available" [class.active]="activeFilter() === 'Available'"
-        (click)="filterRooms('Available')">
-        <i class="bi bi-check-circle-fill me-1.5"></i> Available
-      </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-occupied" [class.active]="activeFilter() === 'Occupied'"
-        (click)="filterRooms('Occupied')">
-        <i class="bi bi-people-fill me-1.5"></i> Occupied
-      </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-cleaning" [class.active]="activeFilter() === 'Cleaning'"
-        (click)="filterRooms('Cleaning')">
-        <i class="bi bi-stars me-1.5"></i> Cleaning
-      </button>
-      <button class="btn px-4 py-2 fw-semibold btn-filter-dirty" [class.active]="activeFilter() === 'Dirty'"
-        (click)="filterRooms('Dirty')">
-        <i class="bi bi-exclamation-triangle-fill me-1.5"></i> Dirty
+  <!-- ===== STATS / FILTER ROW ===== -->
+  <div class="rooms-stats-row">
+    <div class="rooms-stat-card" *ngFor="let tab of statusTabs" (click)="setFilter(tab)"
+      [class.rooms-stat-active]="activeFilter() === tab">
+      <div class="stat-icon-wrap" [ngClass]="{
+        'icon-navy': tab === 'All',
+        'icon-green': tab === 'Available',
+        'icon-blue': tab === 'Occupied',
+        'icon-amber': tab === 'Cleaning',
+        'icon-red': tab === 'Dirty'
+      }">
+        <i class="bi" [ngClass]="{
+          'bi-door-open-fill': tab === 'All',
+          'bi-check-circle-fill': tab === 'Available',
+          'bi-people-fill': tab === 'Occupied',
+          'bi-stars': tab === 'Cleaning',
+          'bi-exclamation-triangle-fill': tab === 'Dirty'
+        }"></i>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">{{ tab }}</span>
+        <span class="stat-value">{{ getStatusCount(tab) }}</span>
+      </div>
+      <div class="stat-active-indicator" *ngIf="activeFilter() === tab"></div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="rooms-search-card">
+    <div class="rooms-search-inner">
+      <i class="bi bi-search rooms-search-icon"></i>
+      <input type="text" class="rooms-search-input" placeholder="Search by room number or type..."
+        [ngModel]="searchText()" (ngModelChange)="searchText.set($event); currentPage = 1;" id="room-search" />
+      <button class="rooms-clear-btn" *ngIf="searchText()" (click)="searchText.set(''); currentPage = 1;" type="button">
+        <i class="bi bi-x-circle-fill"></i>
       </button>
     </div>
   </div>
 
-  <!-- Rooms Grid -->
-  <div class="row g-4" *ngIf="filteredRooms().length > 0; else noRooms">
-    <div class="col-12 col-md-6 col-lg-4 col-xl-3" *ngFor="let room of filteredRooms()">
-      <div class="room-card card border-0 shadow-sm h-100 transition-all rounded-4 overflow-hidden" [ngClass]="{
-             'border-start-available': room.status === 'Available',
-             'border-start-occupied': room.status === 'Occupied',
-             'border-start-cleaning': room.status === 'Cleaning',
-             'border-start-dirty': room.status === 'Dirty'
-           }">
-        <div class="card-body p-3 d-flex flex-column justify-content-between">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="room-number fw-bold text-dark fs-5">Room {{ room.roomNumber }}</span>
-            <span class="status-indicator-dot rounded-circle" [ngClass]="{
-                    'bg-success': room.status === 'Available',
-                    'bg-primary': room.status === 'Occupied',
-                    'bg-warning': room.status === 'Cleaning',
-                    'bg-danger': room.status === 'Dirty'
-                  }" style="width: 10px; height: 10px;">
-            </span>
-          </div>
-
-          <div class="mb-3">
-            <h6 class="room-type fw-semibold text-secondary mb-1">{{ room.typeName }}</h6>
-            <div class="d-flex gap-2 text-muted small">
-              <span><i class="bi bi-person-fill"></i> {{ room.maxOccupancy }} Max</span>
-              <span>•</span>
-              <span><i class="bi bi-building"></i> Lvl {{ room.floor }}</span>
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-light">
-            <span class="room-price fw-bold text-dark">₹{{ room.pricePerNight | number }}/N</span>
-            <span class="badge rounded-pill px-2.5 py-1 text-uppercase fs-8 fw-bold" [ngClass]="{
-                    'bg-success-subtle text-success border border-success-subtle': room.status === 'Available',
-                    'bg-primary-subtle text-primary border border-primary-subtle': room.status === 'Occupied',
-                    'bg-warning-subtle text-warning border border-warning-subtle': room.status === 'Cleaning',
-                    'bg-danger-subtle text-danger border border-danger-subtle': room.status === 'Dirty'
-                  }">
-              {{ room.status }}
-            </span>
-          </div>
-        </div>
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="rooms-skeleton-grid" *ngIf="loading()">
+    <div class="rooms-skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="sk-header-row">
+        <div class="sk-pill w40"></div>
+        <div class="sk-dot"></div>
+      </div>
+      <div class="sk-line w60 mt-3"></div>
+      <div class="sk-line w30 mt-2"></div>
+      <div class="sk-footer">
+        <div class="sk-line w40"></div>
+        <div class="sk-pill w30"></div>
       </div>
     </div>
   </div>
 
-  <ng-template #noRooms>
-    <div class="text-center py-5">
-      <i class="bi bi-door-closed text-muted display-4"></i>
-      <h5 class="mt-3 text-secondary">No Rooms Match Filter</h5>
-      <p class="text-muted small">Try switching filters or check back later.</p>
+  <!-- ===== ROOMS GRID ===== -->
+  <div class="rooms-grid" *ngIf="!loading() && filteredRooms().length > 0">
+    <div class="room-card" *ngFor="let room of paginatedRooms" [class.room-deactive]="!room.isActive"
+      [ngClass]="{
+        'border-start-available': room.status === 'Available',
+        'border-start-occupied': room.status === 'Occupied',
+        'border-start-cleaning': room.status === 'Cleaning',
+        'border-start-dirty': room.status === 'Dirty'
+      }">
+
+      <!-- Card Body -->
+      <div class="room-card-body">
+        <div class="room-card-top">
+          <span class="room-number">Room {{ room.roomNumber }}</span>
+          <span class="status-indicator-dot" [ngClass]="{
+            'bg-success': room.status === 'Available',
+            'bg-primary': room.status === 'Occupied',
+            'bg-warning': room.status === 'Cleaning',
+            'bg-danger': room.status === 'Dirty'
+          }"></span>
+        </div>
+
+        <div class="room-card-middle">
+          <h4 class="room-type">{{ room.typeName }}</h4>
+          <div class="room-features">
+            <span class="feature-tag" title="Max Occupancy">
+              <i class="bi bi-people-fill"></i>
+              <span>{{ room.maxOccupancy }} Max</span>
+            </span>
+            <span class="feature-tag" title="Floor Level">
+              <i class="bi bi-building"></i>
+              <span>Lvl {{ room.floor }}</span>
+            </span>
+            <span class="feature-tag" title="Beds">
+              <i class="bi bi-door-closed"></i>
+              <span>{{ room.noOfBeds || 1 }} Beds</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="room-card-footer">
+          <span class="room-price">₹{{ room.pricePerNight | number }}<span class="denom">/Night</span></span>
+          <span class="badge rounded-pill text-uppercase" [ngClass]="{
+            'bg-success-subtle text-success border border-success-subtle': room.status === 'Available',
+            'bg-primary-subtle text-primary border border-primary-subtle': room.status === 'Occupied',
+            'bg-warning-subtle text-warning border border-warning-subtle': room.status === 'Cleaning',
+            'bg-danger-subtle text-danger border border-danger-subtle': room.status === 'Dirty'
+          }">
+            {{ room.status }}
+          </span>
+        </div>
+      </div>
+
     </div>
-  </ng-template>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading() && filteredRooms().length > pageSize" class="bk-pagination-card mt-4">
+    <span class="pagination-meta">
+      Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong>-<strong>{{ (currentPage * pageSize) > filteredRooms().length ? filteredRooms().length : (currentPage * pageSize) }}</strong> of <strong>{{ filteredRooms().length }}</strong>
+    </span>
+    <div class="pagination-controls">
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="prevPage()">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="page-indicator">Page {{ currentPage }}/{{ totalPages }}</span>
+      <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="nextPage()">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="rooms-grid-empty" *ngIf="!loading() && filteredRooms().length === 0">
+    <div class="empty-state-panel w-100">
+      <i class="bi bi-door-closed text-muted"></i>
+      <h5>No Rooms Match Filter</h5>
+      <p>Try switching filters or search keywords.</p>
+    </div>
+  </div>
+
 </div>

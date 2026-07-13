@@ -1,142 +1,203 @@
-<div class="billing-container container-fluid py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="page-title"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Billing & Payments</h2>
-      <p class="page-subtitle">Generate guest bills, collect payments, and complete check-out</p>
+<div class="billing-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="billing-header">
+    <div class="billing-header-left">
+      <h1 class="billing-title">Billing & Payments</h1>
+      <p class="billing-subtitle">Generate booking invoices, process card/UPI/cash payments, and release room
+        check-outs.</p>
     </div>
   </div>
 
-  <!-- Step 1: Booking Lookup -->
-  <div class="toolbar-panel mb-4">
-    <label class="form-label fw-semibold small text-secondary mb-2">Enter Booking ID to Generate Bill</label>
-    <div class="row g-2 align-items-center">
-      <div class="col-12 col-md-4">
-        <div class="input-group">
-          <span class="input-group-text search-icon-bg">
-            <i class="bi bi-hash"></i>
-          </span>
-          <input type="number" class="form-control search-input" placeholder="e.g. 1024" [(ngModel)]="bookingIdInput"
-            (keyup.enter)="generateBill()" min="1" />
-        </div>
-      </div>
-      <div class="col-auto">
-        <button class="btn btn-primary-custom px-4 py-2" (click)="generateBill()">
-          <span *ngIf="!loadingBill"><i class="bi bi-file-earmark-plus me-1"></i> Generate Bill</span>
-          <span *ngIf="loadingBill"><span class="spinner-border spinner-border-sm me-1"></span> Generating...</span>
-        </button>
-      </div>
-      <div class="col-auto" *ngIf="bill">
-        <button class="btn btn-light border px-3 py-2" (click)="resetSearch()">
-          <i class="bi bi-arrow-counterclockwise me-1"></i> New Search
-        </button>
-      </div>
+  <!-- ===== STEP 1: BOOKING LOOKUP ===== -->
+  <div class="billing-search-card">
+    <label class="search-label">Select Guest Booking</label>
+    <div class="billing-search-inner">
+      <i class="bi bi-person-lines-fill billing-search-icon"></i>
+
+      <select class="billing-search-input"
+        [ngModel]="bookingIdInput"
+        (ngModelChange)="onBookingSelected($event)"
+        [disabled]="loadingBookings"
+        style="cursor:pointer;">
+        <option [ngValue]="null" disabled>
+          {{ loadingBookings ? 'Loading checked-in guests...' : 'Select a guest booking...' }}
+        </option>
+        <option *ngFor="let b of checkedInBookings" [ngValue]="b.bookingId">
+          {{ b.customerName }} &nbsp;—&nbsp; Booking #{{ b.bookingId }}
+        </option>
+      </select>
+
+      <button class="btn-generate" (click)="generateBill()" [disabled]="!bookingIdInput || loadingBill">
+        <span *ngIf="!loadingBill"><i class="bi bi-file-earmark-plus-fill me-1.5"></i>Generate Bill</span>
+        <span *ngIf="loadingBill"><span class="spinner-border spinner-border-sm me-1.5"></span>Generating...</span>
+      </button>
+
+      <button class="btn-clear" *ngIf="bill" (click)="resetSearch()" title="New Invoice Search">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
     </div>
   </div>
 
-  <!-- Loading indicator -->
-  <div *ngIf="loadingBill" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Generating bill...</span>
-    </div>
-    <p class="text-muted small mt-3 mb-0">Generating bill, please wait...</p>
+  <!-- ===== LOADING STATE ===== -->
+  <div *ngIf="loadingBill" class="billing-loading-panel">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-3 mb-0">Assembling invoice ledger details, please wait...</p>
   </div>
 
-  <!-- No bill state -->
-  <div *ngIf="!loadingBill && !bill" class="table-card">
-    <div class="text-center py-5">
-      <i class="bi bi-receipt text-muted display-4"></i>
-      <h5 class="mt-3 text-secondary">No Bill Loaded</h5>
-      <p class="text-muted small mb-0">Enter a Booking ID above and click Generate Bill to begin.</p>
-    </div>
+  <!-- ===== NO BILL INITIAL STATE ===== -->
+  <div *ngIf="!loadingBill && !bill" class="billing-empty-state">
+    <i class="bi bi-receipt-cutoff text-muted"></i>
+    <h5>No Bill Generated</h5>
+    <p>Please supply a valid Booking ID in the search input above to retrieve invoice fields.</p>
   </div>
 
-  <!-- Step 1 result: Bill Summary Card -->
-  <div class="row g-4" *ngIf="!loadingBill && bill">
-    <div class="col-12 col-lg-6">
-      <div class="table-card p-4 h-100">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>Bill Summary</h5>
-          <span class="invoice-no-tag">Bill #{{ bill.billId }}</span>
-        </div>
+  <!-- ===== STEP 2 & 3: BILL DETAILS & PAYMENT COLLECTION ===== -->
+  <div class="billing-details-row" *ngIf="!loadingBill && bill">
 
-        <div class="d-flex justify-content-between py-2 border-bottom">
-          <span class="text-secondary">Booking ID</span>
-          <span class="fw-semibold text-dark">#{{ bill.bookingId }}</span>
+    <!-- Invoice Summary Column -->
+    <div class="bill-details-card">
+      <div class="card-header-bar">
+        <span class="card-header-title"><i class="bi bi-file-earmark-text text-primary"></i> Invoice Summary</span>
+        <span class="invoice-no-tag">Bill #{{ bill.billId }}</span>
+      </div>
+
+      <div class="charges-list mt-3">
+        <div class="charge-row">
+          <span class="charge-label">Booking Reference</span>
+          <span class="charge-value text-primary font-monospace">#{{ bill.bookingId }}</span>
         </div>
-        <div class="d-flex justify-content-between py-2 border-bottom">
-          <span class="text-secondary">Generated Date</span>
-          <span class="fw-semibold text-dark">{{ bill.generatedDate | date:'medium' }}</span>
+        <div class="charge-row">
+          <span class="charge-label">Invoice Timestamp</span>
+          <span class="charge-value">{{ bill.generatedDate | date:'medium' }}</span>
         </div>
-        <div class="d-flex justify-content-between py-2 border-bottom">
-          <span class="text-secondary">Room Charges</span>
-          <span class="fw-semibold text-dark">₹{{ bill.roomCharges | number }}</span>
+        <div class="charge-row">
+          <span class="charge-label">Base Room Tariff</span>
+          <span class="charge-value">₹{{ bill.roomCharges | number }}</span>
         </div>
-        <div class="d-flex justify-content-between py-2 border-bottom">
-          <span class="text-secondary">Food Charges</span>
-          <span class="fw-semibold text-dark">₹{{ bill.foodCharges | number }}</span>
+        <div class="charge-row">
+          <span class="charge-label">Food & Beverage</span>
+          <span class="charge-value">₹{{ bill.foodCharges | number }}</span>
         </div>
-        <div class="d-flex justify-content-between py-2 border-bottom">
-          <span class="text-secondary">Other Charges</span>
-          <span class="fw-semibold text-dark">₹{{ bill.otherCharges | number }}</span>
+        <div class="charge-row">
+          <span class="charge-label">Other Ancillary Services</span>
+          <span class="charge-value">₹{{ bill.otherCharges | number }}</span>
         </div>
-        <div class="d-flex justify-content-between pt-3">
-          <span class="fw-bold text-dark fs-5">Total Due</span>
-          <span class="fw-bold amount-text fs-5">₹{{ bill.totalAmount | number }}</span>
+      </div>
+
+      <div class="total-due-box mt-4">
+        <div class="total-label-wrap">
+          <i class="bi bi-wallet2"></i>
+          <span>Total Balance Due</span>
         </div>
+        <span class="total-amount">₹{{ bill.totalAmount | number }}</span>
       </div>
     </div>
 
-    <!-- Step 2: Payment Section (auto-shown once bill exists) -->
-    <div class="col-12 col-lg-6">
-      <div class="table-card p-4 h-100">
-        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-credit-card text-success me-2"></i>Collect Payment</h5>
+    <!-- Payment Action Column -->
+    <div class="payment-action-card">
+      <div class="card-header-bar">
+        <span class="card-header-title"><i class="bi bi-credit-card text-success"></i> Collect Payment</span>
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold small text-secondary">Bill ID</label>
-          <input type="number" class="form-control" [(ngModel)]="billIdForPayment" [disabled]="paymentCollected">
+      <div class="payment-form mt-3">
+        <div class="form-group mb-3">
+          <label class="form-label">Bill ID Target</label>
+          <input type="number" class="form-control font-monospace" [(ngModel)]="billIdForPayment"
+            [disabled]="paymentCollected">
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold small text-secondary">Payment Method</label>
+        <div class="form-group mb-3">
+          <label class="form-label">Payment Method</label>
           <select class="form-select" [(ngModel)]="selectedMethod" (ngModelChange)="updateButtonStates()"
             [disabled]="paymentCollected">
-            <option [ngValue]="null">Select Payment Method</option>
+            <option [ngValue]="null">Select Payment Option</option>
             <option [ngValue]="PaymentMethod.Cash">Cash</option>
             <option [ngValue]="PaymentMethod.CreditCard">Credit Card</option>
             <option [ngValue]="PaymentMethod.DebitCard">Debit Card</option>
-            <option [ngValue]="PaymentMethod.Upi">UPI</option>
+            <option [ngValue]="PaymentMethod.Upi">UPI Transfer</option>
             <option [ngValue]="PaymentMethod.NetBanking">Net Banking</option>
           </select>
         </div>
 
-        <div class="form-check mb-3 p-3 bg-light rounded-3 border">
-          <input class="form-check-input" type="checkbox" id="verifyCheck" [(ngModel)]="verifiedWithCustomer"
-            (ngModelChange)="updateButtonStates()" [disabled]="paymentCollected">
-          <label class="form-check-label fw-semibold small" for="verifyCheck">
-            I have verified the total amount (₹{{ bill.totalAmount | number }}) and payment method with the guest.
-          </label>
+        <div class="verification-box mb-4">
+          <div class="d-flex gap-2.5">
+            <input class="form-check-input mt-1 flex-shrink-0" type="checkbox" id="verifyCheck"
+              [(ngModel)]="verifiedWithCustomer" (ngModelChange)="updateButtonStates()" [disabled]="paymentCollected">
+            <label class="form-check-label" for="verifyCheck">
+              I verify that the invoice total (<strong>₹{{ bill.totalAmount | number }}</strong>) has been reconciled
+              and approved by the guest.
+            </label>
+          </div>
         </div>
 
-        <button class="btn btn-primary-custom w-100 py-2 mb-3" [disabled]="!canCollectPayment || collectingPayment"
-          (click)="collectPayment()">
-          <span *ngIf="!collectingPayment"><i class="bi bi-cash-coin me-1"></i> Collect Payment</span>
-          <span *ngIf="collectingPayment"><span class="spinner-border spinner-border-sm me-1"></span>
-            Processing...</span>
+        <!-- Collect Payment Action -->
+        <button class="btn btn-payment w-100 py-2.5 mb-3" [disabled]="!canCollectPayment || collectingPayment"
+          (click)="confirmCollectPayment()">
+          <span *ngIf="!collectingPayment"><i class="bi bi-cash-coin me-1.5"></i>Collect Payment</span>
+          <span *ngIf="collectingPayment"><span class="spinner-border spinner-border-sm me-1.5"></span>Processing
+            Payment...</span>
         </button>
 
-        <div *ngIf="paymentCollected" class="alert alert-success d-flex align-items-center gap-2 mb-3" role="alert">
-          <i class="bi bi-check-circle-fill fs-5"></i>
-          <span class="small fw-semibold">Payment collected successfully.</span>
+        <!-- Payment Success Alert -->
+        <div *ngIf="paymentCollected" class="payment-success-alert mb-4">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Folio cleared. Payment collected successfully.</span>
         </div>
 
-        <button class="btn btn-danger w-100 py-2" [disabled]="!canCheckout || checkingOut" (click)="checkout()">
-          <span *ngIf="!checkingOut"><i class="bi bi-box-arrow-right me-1"></i> Check Out Guest</span>
-          <span *ngIf="checkingOut"><span class="spinner-border spinner-border-sm me-1"></span> Checking Out...</span>
+        <!-- Checkout Action -->
+        <button class="btn btn-checkout w-100 py-2.5" [disabled]="!canCheckout || checkingOut"
+          (click)="confirmCheckout()">
+          <span *ngIf="!checkingOut"><i class="bi bi-box-arrow-right me-1.5"></i>Check Out Guest</span>
+          <span *ngIf="checkingOut"><span class="spinner-border spinner-border-sm me-1.5"></span>Checking Out
+            Room...</span>
         </button>
-        <p class="text-muted small mt-2 mb-0" *ngIf="!paymentCollected">
-          <i class="bi bi-info-circle me-1"></i>Checkout unlocks once payment is verified and collected.
+
+        <p class="payment-instructions-tip mt-3" *ngIf="!paymentCollected">
+          <i class="bi bi-info-circle-fill me-1"></i>Guest checkout triggers automatically once the invoice ledger has
+          been paid.
         </p>
       </div>
     </div>
+
+  </div>
+
+</div>
+
+<!-- ==========================================
+     CUSTOM CONFIRMATION MODAL OVERLAY
+========================================== -->
+<div class="modal-overlay d-flex justify-content-center align-items-center" *ngIf="showConfirmModal">
+  <div class="modal-card bg-white rounded-4 shadow-lg text-center" style="max-width: 420px; padding: 32px;"
+    (click)="$event.stopPropagation()">
+
+    <div class="confirm-icon-wrap mb-3" [ngClass]="{
+      'confirm-success': confirmAction === 'payment',
+      'confirm-danger': confirmAction === 'checkout'
+    }">
+      <i class="bi" [ngClass]="{
+        'bi-cash-coin': confirmAction === 'payment',
+        'bi-box-arrow-right': confirmAction === 'checkout'
+      }"></i>
+    </div>
+
+    <h4 class="fw-bold text-dark mb-2">{{ confirmTitle }}</h4>
+    <p class="text-muted small mb-4">{{ confirmMessage }}</p>
+
+    <div class="d-flex gap-3 justify-content-center">
+      <button class="btn btn-light border px-4 py-2 fw-semibold" style="border-radius: 12px;"
+        (click)="closeConfirmModal()" [disabled]="processingAction">
+        Cancel
+      </button>
+      <button class="btn px-4 py-2 fw-semibold text-white" [ngClass]="{
+        'btn-success': confirmAction === 'payment',
+        'btn-danger': confirmAction === 'checkout'
+      }" style="border-radius: 12px;" (click)="executeConfirmedAction()" [disabled]="processingAction">
+        <span *ngIf="!processingAction">Confirm</span>
+        <span *ngIf="processingAction"><span class="spinner-border spinner-border-sm me-1.5"
+            role="status"></span>Processing...</span>
+      </button>
+    </div>
+
   </div>
 </div>

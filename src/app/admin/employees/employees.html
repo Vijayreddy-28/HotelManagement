@@ -1,0 +1,294 @@
+<div class="employees-page">
+
+  <!-- ===== PAGE HEADER ===== -->
+  <div class="emp-header">
+    <div class="emp-header-left">
+      <h1 class="emp-title">Employee Management</h1>
+      <p class="emp-subtitle">Register staff members, manage roles and system access.</p>
+    </div>
+    <button class="btn-register" (click)="openRegModal()" id="add-employee-btn">
+      <i class="bi bi-person-plus-fill"></i>
+      <span>Register New Staff</span>
+    </button>
+  </div>
+
+  <!-- ===== STATS ROW ===== -->
+  <div class="emp-stats-row">
+    <div class="emp-stat-card">
+      <div class="stat-icon-wrap icon-blue"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Total Staff</span>
+        <span class="stat-value">{{ employees.length }}</span>
+      </div>
+    </div>
+    <div class="emp-stat-card">
+      <div class="stat-icon-wrap icon-green"><i class="bi bi-shield-check"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Active</span>
+        <span class="stat-value">{{ activeCount }}</span>
+      </div>
+    </div>
+    <div class="emp-stat-card">
+      <div class="stat-icon-wrap icon-red"><i class="bi bi-shield-slash"></i></div>
+      <div class="stat-body">
+        <span class="stat-label">Inactive</span>
+        <span class="stat-value">{{ employees.length - activeCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SEARCH BAR ===== -->
+  <div class="emp-search-card">
+    <div class="emp-search-inner">
+      <i class="bi bi-search emp-search-icon"></i>
+      <input type="text" class="emp-search-input" placeholder="Search by name, email, or role..."
+        [(ngModel)]="searchText" (ngModelChange)="filterEmployees()" />
+      <button class="emp-clear-btn" *ngIf="searchText" (click)="searchText=''; filterEmployees()" type="button">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== LOADING SKELETON ===== -->
+  <div class="emp-skeleton-grid" *ngIf="loading">
+    <div class="emp-skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+      <div class="sk-avatar"></div>
+      <div class="sk-lines">
+        <div class="sk-line w60"></div>
+        <div class="sk-line w40"></div>
+        <div class="sk-line w80"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EMPLOYEES GRID ===== -->
+  <div class="emp-grid" *ngIf="!loading && filteredEmployees.length > 0">
+    <div class="emp-card" *ngFor="let emp of filteredEmployees" [class.emp-card-inactive]="!emp.isActive">
+
+      <!-- Card Top -->
+      <div class="emp-card-top">
+        <div class="emp-avatar" [class.inactive-avatar]="!emp.isActive">
+          {{ (emp.userName || '?').charAt(0).toUpperCase() }}
+        </div>
+        <div class="emp-info">
+          <h3 class="emp-name">{{ emp.userName || 'Unnamed' }}</h3>
+          <span class="emp-role-badge" [ngClass]="getRoleBadgeClass(emp.role)">
+            {{ getRoleName(emp.role) }}
+          </span>
+        </div>
+        <div class="emp-status-dot" [class.dot-active]="emp.isActive" [class.dot-inactive]="!emp.isActive"></div>
+      </div>
+
+      <!-- Divider -->
+      <div class="emp-divider"></div>
+
+      <!-- Card Details -->
+      <div class="emp-detail-list">
+        <div class="emp-detail-row">
+          <div class="emp-detail-icon"><i class="bi bi-envelope-fill"></i></div>
+          <span class="emp-detail-text" [title]="emp.email">{{ emp.email || 'N/A' }}</span>
+        </div>
+        <div class="emp-detail-row">
+          <div class="emp-detail-icon"><i class="bi bi-telephone-fill"></i></div>
+          <span class="emp-detail-text">{{ emp.phoneNumber || 'N/A' }}</span>
+        </div>
+        <div class="emp-detail-row">
+          <div class="emp-detail-icon"><i class="bi bi-currency-rupee"></i></div>
+          <span class="emp-detail-text"><strong>₹{{ emp.salary | number }}</strong> / month</span>
+        </div>
+        <div class="emp-detail-row">
+          <div class="emp-detail-icon"><i class="bi bi-geo-alt-fill"></i></div>
+          <span class="emp-detail-text" [title]="emp.city + ', ' + emp.country">
+            {{ emp.city || '—' }}, {{ emp.country || '—' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="emp-card-footer">
+        <button class="btn-toggle-status" [class.btn-deactivate]="emp.isActive" [class.btn-activate]="!emp.isActive"
+          (click)="toggleEmployeeStatus(emp)">
+          <i class="bi" [ngClass]="emp.isActive ? 'bi-shield-slash' : 'bi-shield-check'"></i>
+          <span>{{ emp.isActive ? 'Deactivate' : 'Activate' }}</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== EMPTY STATE ===== -->
+  <div class="emp-empty" *ngIf="!loading && filteredEmployees.length === 0">
+    <div class="emp-empty-icon"><i class="bi bi-person-x"></i></div>
+    <h4>No Staff Found</h4>
+    <p>No employees match your current search. Try a different term or register a new staff member.</p>
+    <button class="btn-register" (click)="openRegModal()">
+      <i class="bi bi-person-plus-fill"></i> Register New Staff
+    </button>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     REGISTRATION MODAL
+     ============================================================ -->
+<div class="reg-modal-overlay" *ngIf="showRegModal" (click)="closeRegModal()">
+  <div class="reg-modal-card" (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="reg-modal-header">
+      <div class="reg-modal-title-row">
+        <div class="reg-modal-icon"><i class="bi bi-person-plus-fill"></i></div>
+        <div>
+          <h2 class="reg-modal-title">Staff Registration</h2>
+          <p class="reg-modal-subtitle">Add a new team member to the system</p>
+        </div>
+      </div>
+      <button class="reg-close-btn" (click)="closeRegModal()" type="button" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form [formGroup]="regForm" (ngSubmit)="onSubmit()">
+      <div class="reg-modal-body">
+        <div class="reg-form-grid">
+
+          <!-- Username -->
+          <div class="reg-field">
+            <label class="reg-label">Full Name</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-person reg-input-icon"></i>
+              <input type="text" class="reg-input" formControlName="userName" placeholder="e.g. John Doe" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('userName')?.touched && regForm.get('userName')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Username required (min 3 characters).
+            </span>
+          </div>
+
+          <!-- Email -->
+          <div class="reg-field">
+            <label class="reg-label">Email Address</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-envelope reg-input-icon"></i>
+              <input type="email" class="reg-input" formControlName="email" placeholder="john.doe@canopy.com" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('email')?.touched && regForm.get('email')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Enter a valid email address.
+            </span>
+          </div>
+
+          <!-- Password -->
+          <div class="reg-field">
+            <label class="reg-label">Security Password</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-lock reg-input-icon"></i>
+              <input type="password" class="reg-input" formControlName="password" placeholder="••••••••" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('password')?.touched && regForm.get('password')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Password required (min 6 characters).
+            </span>
+          </div>
+
+          <!-- Phone -->
+          <div class="reg-field">
+            <label class="reg-label">Phone Number</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-telephone reg-input-icon"></i>
+              <input type="text" class="reg-input" formControlName="phone" placeholder="10-digit mobile number" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('phone')?.touched && regForm.get('phone')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Enter a valid 10-digit number.
+            </span>
+          </div>
+
+          <!-- Role -->
+          <div class="reg-field">
+            <label class="reg-label">Role Classification</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-briefcase reg-input-icon"></i>
+              <select class="reg-input reg-select" formControlName="role">
+                <option [value]="1">Admin</option>
+                <option [value]="3">Receptionist</option>
+                <option [value]="4">Delivery Person</option>
+                <option [value]="5">Housekeeping</option>
+                <option [value]="6">Chef</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Gender -->
+          <div class="reg-field">
+            <label class="reg-label">Gender</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-gender-ambiguous reg-input-icon"></i>
+              <select class="reg-input reg-select" formControlName="gender">
+                <option [value]="1">Male</option>
+                <option [value]="2">Female</option>
+                <option [value]="3">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="reg-field">
+            <label class="reg-label">Date of Birth</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-calendar3 reg-input-icon"></i>
+              <input type="date" class="reg-input" formControlName="dateOfBirth" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('dateOfBirth')?.touched && regForm.get('dateOfBirth')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Date of birth is required.
+            </span>
+          </div>
+
+          <!-- Salary -->
+          <div class="reg-field">
+            <label class="reg-label">Monthly Salary (₹)</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-currency-rupee reg-input-icon"></i>
+              <input type="number" class="reg-input" formControlName="salary" placeholder="15000" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('salary')?.touched && regForm.get('salary')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Salary must be at least 1.
+            </span>
+          </div>
+
+          <!-- City -->
+          <div class="reg-field">
+            <label class="reg-label">City</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-building reg-input-icon"></i>
+              <input type="text" class="reg-input" formControlName="city" placeholder="e.g. Bangalore" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('city')?.touched && regForm.get('city')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> City is required.
+            </span>
+          </div>
+
+          <!-- Country -->
+          <div class="reg-field">
+            <label class="reg-label">Country</label>
+            <div class="reg-input-wrap">
+              <i class="bi bi-globe2 reg-input-icon"></i>
+              <input type="text" class="reg-input" formControlName="country" placeholder="India" />
+            </div>
+            <span class="reg-error" *ngIf="regForm.get('country')?.touched && regForm.get('country')?.invalid">
+              <i class="bi bi-exclamation-circle"></i> Country is required.
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="reg-modal-footer">
+        <button type="button" class="btn-reg-cancel" (click)="closeRegModal()">Cancel</button>
+        <button type="submit" class="btn-reg-submit" [disabled]="submitting" id="submit-registration-btn">
+          <span *ngIf="!submitting"><i class="bi bi-check-circle-fill me-2"></i>Register Staff</span>
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm"></span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
