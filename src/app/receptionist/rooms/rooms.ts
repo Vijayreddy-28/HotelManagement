@@ -1,8 +1,10 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { Room } from '../../../models/room.model';
 import { RoomService } from '../../../services/room.service';
+import { NotificationHubService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-receptionist-rooms',
@@ -11,7 +13,9 @@ import { RoomService } from '../../../services/room.service';
   templateUrl: './rooms.html',
   styleUrl: './rooms.css',
 })
-export class ReceptionistRoomsComponent implements OnInit {
+export class ReceptionistRoomsComponent implements OnInit, OnDestroy {
+  private roomStatusSub?: Subscription;
+
   rooms = signal<Room[]>([]);
   activeFilter = signal<string>('All');
   searchText = signal<string>('');
@@ -53,10 +57,24 @@ export class ReceptionistRoomsComponent implements OnInit {
     return Math.max(1, Math.ceil(this.filteredRooms().length / this.pageSize));
   }
 
-  constructor(private roomService: RoomService) { }
+  constructor(
+    private roomService: RoomService,
+    private notify: NotificationHubService
+  ) { }
 
   ngOnInit(): void {
     this.loadRooms();
+
+    // Live-update a room's status when housekeeping (or check-in) changes it
+    this.roomStatusSub = this.notify.roomStatusChanged$.subscribe(({ roomId, status }) => {
+      this.rooms.update(list =>
+        list.map(r => r.roomId === roomId ? { ...r, status } : r)
+      );
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.roomStatusSub?.unsubscribe();
   }
 
   loadRooms() {
