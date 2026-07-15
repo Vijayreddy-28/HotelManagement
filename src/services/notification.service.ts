@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import * as signalR from '@microsoft/signalr';
+import { Subject } from 'rxjs';
 import { apiUrl } from '../environment';
 import { ToastrService } from 'ngx-toastr';
 
@@ -14,6 +15,9 @@ export class NotificationHubService {
     // Reactive notification store
     notifications = signal<any[]>([]);
     unreadCount = computed(() => this.notifications().filter(n => !n.isRead).length);
+
+    // Real-time room status updates (discrete events, e.g. housekeeping start/complete)
+    roomStatusChanged$ = new Subject<{ roomId: number; status: string }>();
 
     constructor(private http: HttpClient, private toastr: ToastrService) {}
 
@@ -134,6 +138,12 @@ export class NotificationHubService {
 
     listenForNotifications() {
         if (!this.hubConnection) return;
+
+        this.hubConnection.off("RoomStatusChanged");
+        this.hubConnection.on("RoomStatusChanged", (payload: { roomId: number; status: string }) => {
+            console.log("Room status changed", payload);
+            this.roomStatusChanged$.next(payload);
+        });
 
         this.hubConnection.off("ReceiveNotification");
         this.hubConnection.on("ReceiveNotification", (notification) => {

@@ -232,7 +232,8 @@ export class ReceptionistBillingComponent {
       this.checkingOut = true;
       this.cdr.detectChanges();
 
-      this.roomBookingService.checkOut(this.bill!.bookingId).subscribe({
+      const feedbackUrl = `${window.location.origin}/customer/feedback`;
+      this.roomBookingService.checkOut(this.bill!.bookingId, feedbackUrl).subscribe({
         next: (response: any) => {
           this.checkingOut = false;
           this.processingAction = false;
