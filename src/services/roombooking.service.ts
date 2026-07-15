@@ -40,9 +40,9 @@ export class RoomBookingService {
     return this.http.post(url, {}, { headers: this.getHeaders() });
   }
 
-  public checkOut(bookingId: number) {
+  public checkOut(bookingId: number, feedbackUrl?: string) {
     const url = `${apiUrl}RoomBooking/${bookingId}/checkout`;
-    return this.http.post(url, {}, { headers: this.getHeaders() });
+    return this.http.post(url, { feedbackUrl }, { headers: this.getHeaders() });
   }
 
   public cancelBooking(bookingId: number) {

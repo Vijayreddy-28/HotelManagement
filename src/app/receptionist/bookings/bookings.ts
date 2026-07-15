@@ -403,7 +403,8 @@ export class ReceptionistBookingsComponent implements OnInit {
         }
       });
     } else if (action === 'checkout') {
-      this.bookingService.checkOut(id).subscribe({
+      const feedbackUrl = `${window.location.origin}/customer/feedback`;
+      this.bookingService.checkOut(id, feedbackUrl).subscribe({
         next: (response: any) => {
           this.processingAction.set(false);
           this.closeConfirmModal();
